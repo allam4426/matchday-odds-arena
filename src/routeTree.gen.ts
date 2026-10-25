@@ -24,7 +24,10 @@ import { Route as AuthenticatedWalletRouteImport } from './routes/_authenticated
 import { Route as CompetitionIdRouteImport } from './routes/competition.$id'
 import { Route as MatchIdRouteImport } from './routes/match.$id'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as AuthenticatedAdminDepositsRouteImport } from './routes/_authenticated/admin.deposits'
+import { Route as AuthenticatedAdminWithdrawalsRouteImport } from './routes/_authenticated/admin.withdrawals'
 import { Route as AuthenticatedAdminMatchesIndexRouteImport } from './routes/_authenticated/admin.matches.index'
+import { Route as AuthenticatedAdminMatchesIdRouteImport } from './routes/_authenticated/admin.matches.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -100,10 +103,28 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRoute,
 } as any)
+const AuthenticatedAdminDepositsRoute =
+  AuthenticatedAdminDepositsRouteImport.update({
+    id: '/deposits',
+    path: '/deposits',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminWithdrawalsRoute =
+  AuthenticatedAdminWithdrawalsRouteImport.update({
+    id: '/withdrawals',
+    path: '/withdrawals',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminMatchesIndexRoute =
   AuthenticatedAdminMatchesIndexRouteImport.update({
     id: '/matches/',
     path: '/matches/',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminMatchesIdRoute =
+  AuthenticatedAdminMatchesIdRouteImport.update({
+    id: '/matches/$id',
+    path: '/matches/$id',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 
@@ -121,7 +142,10 @@ export interface FileRoutesByFullPath {
   '/wallet': typeof AuthenticatedWalletRoute
   '/competition/$id': typeof CompetitionIdRoute
   '/match/$id': typeof MatchIdRoute
+  '/admin/deposits': typeof AuthenticatedAdminDepositsRoute
+  '/admin/withdrawals': typeof AuthenticatedAdminWithdrawalsRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/admin/matches/$id': typeof AuthenticatedAdminMatchesIdRoute
   '/admin/matches/': typeof AuthenticatedAdminMatchesIndexRoute
 }
 export interface FileRoutesByTo {
@@ -137,7 +161,10 @@ export interface FileRoutesByTo {
   '/wallet': typeof AuthenticatedWalletRoute
   '/competition/$id': typeof CompetitionIdRoute
   '/match/$id': typeof MatchIdRoute
+  '/admin/deposits': typeof AuthenticatedAdminDepositsRoute
+  '/admin/withdrawals': typeof AuthenticatedAdminWithdrawalsRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/admin/matches/$id': typeof AuthenticatedAdminMatchesIdRoute
   '/admin/matches': typeof AuthenticatedAdminMatchesIndexRoute
 }
 export interface FileRoutesById {
@@ -156,7 +183,10 @@ export interface FileRoutesById {
   '/_authenticated/wallet': typeof AuthenticatedWalletRoute
   '/competition/$id': typeof CompetitionIdRoute
   '/match/$id': typeof MatchIdRoute
+  '/_authenticated/admin/deposits': typeof AuthenticatedAdminDepositsRoute
+  '/_authenticated/admin/withdrawals': typeof AuthenticatedAdminWithdrawalsRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/admin/matches/$id': typeof AuthenticatedAdminMatchesIdRoute
   '/_authenticated/admin/matches/': typeof AuthenticatedAdminMatchesIndexRoute
 }
 export interface FileRouteTypes {
@@ -175,7 +205,10 @@ export interface FileRouteTypes {
     | '/wallet'
     | '/competition/$id'
     | '/match/$id'
+    | '/admin/deposits'
+    | '/admin/withdrawals'
     | '/admin/'
+    | '/admin/matches/$id'
     | '/admin/matches/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -191,7 +224,10 @@ export interface FileRouteTypes {
     | '/wallet'
     | '/competition/$id'
     | '/match/$id'
+    | '/admin/deposits'
+    | '/admin/withdrawals'
     | '/admin'
+    | '/admin/matches/$id'
     | '/admin/matches'
   id:
     | '__root__'
@@ -209,7 +245,10 @@ export interface FileRouteTypes {
     | '/_authenticated/wallet'
     | '/competition/$id'
     | '/match/$id'
+    | '/_authenticated/admin/deposits'
+    | '/_authenticated/admin/withdrawals'
     | '/_authenticated/admin/'
+    | '/_authenticated/admin/matches/$id'
     | '/_authenticated/admin/matches/'
   fileRoutesById: FileRoutesById
 }
@@ -333,6 +372,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/deposits': {
+      id: '/_authenticated/admin/deposits'
+      path: '/deposits'
+      fullPath: '/admin/deposits'
+      preLoaderRoute: typeof AuthenticatedAdminDepositsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/withdrawals': {
+      id: '/_authenticated/admin/withdrawals'
+      path: '/withdrawals'
+      fullPath: '/admin/withdrawals'
+      preLoaderRoute: typeof AuthenticatedAdminWithdrawalsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/matches/': {
       id: '/_authenticated/admin/matches/'
       path: '/matches'
@@ -340,16 +393,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminMatchesIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/matches/$id': {
+      id: '/_authenticated/admin/matches/$id'
+      path: '/matches/$id'
+      fullPath: '/admin/matches/$id'
+      preLoaderRoute: typeof AuthenticatedAdminMatchesIdRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
   }
 }
 
 interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminDepositsRoute: typeof AuthenticatedAdminDepositsRoute
+  AuthenticatedAdminWithdrawalsRoute: typeof AuthenticatedAdminWithdrawalsRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+  AuthenticatedAdminMatchesIdRoute: typeof AuthenticatedAdminMatchesIdRoute
   AuthenticatedAdminMatchesIndexRoute: typeof AuthenticatedAdminMatchesIndexRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminDepositsRoute: AuthenticatedAdminDepositsRoute,
+  AuthenticatedAdminWithdrawalsRoute: AuthenticatedAdminWithdrawalsRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+  AuthenticatedAdminMatchesIdRoute: AuthenticatedAdminMatchesIdRoute,
   AuthenticatedAdminMatchesIndexRoute: AuthenticatedAdminMatchesIndexRoute,
 }
 
