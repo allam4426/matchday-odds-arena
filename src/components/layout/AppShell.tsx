@@ -4,7 +4,7 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { formatDistanceToNow } from "date-fns";
 import {
   Bell,
-  CalendarClock,
+
   Home,
   Menu,
   Radio,
@@ -353,4 +353,3 @@ export function AppShell({ children }: { children: ReactNode }) {
   );
 }
 
-export { CalendarClock };
