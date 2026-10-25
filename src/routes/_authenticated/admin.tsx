@@ -28,10 +28,6 @@ const NAV = [
   { to: "/admin/matches", label: "Matches & Odds" },
   { to: "/admin/deposits", label: "Deposits" },
   { to: "/admin/withdrawals", label: "Withdrawals" },
-  { to: "/admin/bets", label: "Bets" },
-  { to: "/admin/users", label: "Users" },
-  { to: "/admin/audit", label: "Audit log" },
-  { to: "/admin/settings", label: "Settings" },
 ] as const;
 
 function AdminLayout() {

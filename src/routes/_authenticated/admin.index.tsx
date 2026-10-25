@@ -14,7 +14,7 @@ export const Route = createFileRoute("/_authenticated/admin/")({
 
 type Stats = Record<string, number>;
 
-function Card({ label, value, sub, to, alert }: { label: string; value: string | number; sub?: string; to?: string; alert?: boolean }) {
+function Card({ label, value, sub, to, alert }: { label: string; value: string | number; sub?: string; to?: "/admin/deposits" | "/admin/withdrawals" | "/admin/matches"; alert?: boolean }) {
   const inner = (
     <div className={cn("h-full rounded-lg border bg-card p-4", alert ? "border-warning/60" : "border-border")}>
       <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
@@ -97,10 +97,10 @@ function AdminOverview() {
         <Card label="Pending withdrawals" value={s?.pending_withdrawals ?? "–"} sub={m(s?.pending_withdrawals_minor)} to="/admin/withdrawals" alert={!!s?.pending_withdrawals} />
         <Card label="Live matches" value={s?.live_matches ?? "–"} sub={`${s?.upcoming_matches ?? 0} upcoming`} to="/admin/matches" />
         <Card label="Suspended markets" value={s?.suspended_markets ?? "–"} sub="On open events" to="/admin/matches" />
-        <Card label="Open bets" value={s?.open_bets ?? "–"} sub={`Stakes ${m(s?.open_stakes_minor)}`} to="/admin/bets" />
+        <Card label="Open bets" value={s?.open_bets ?? "–"} sub={`Stakes ${m(s?.open_stakes_minor)}`}/>
         <Card label="Settled bets" value={s?.settled_bets ?? "–"} sub={`Stakes ${m(s?.settled_stakes_minor)}`} />
         <Card label="Settled returns" value={m(s?.settled_returns_minor)} sub={`Gross gaming revenue ${m(ggr)}`} />
-        <Card label="Registered users" value={s?.users ?? "–"} sub={`${s?.active_users ?? 0} active · ${s?.restricted_users ?? 0} restricted`} to="/admin/users" />
+        <Card label="Registered users" value={s?.users ?? "–"} sub={`${s?.active_users ?? 0} active · ${s?.restricted_users ?? 0} restricted`}/>
         <Card label="Approved deposits" value={m(s?.approved_deposits_minor)} sub="Gross, all time" />
         <Card label="Paid withdrawals" value={m(s?.paid_withdrawals_minor)} sub="Gross, all time" />
         <Card label="Customer liability" value={m(s?.wallet_liability_minor)} sub="Balances + reserved funds" />
@@ -109,7 +109,7 @@ function AdminOverview() {
       <section className="rounded-lg border border-border bg-card">
         <header className="flex items-center justify-between border-b border-border px-4 py-2">
           <h2 className="text-sm font-semibold">Recent admin activity</h2>
-          <Link to="/admin/audit" className="text-xs text-primary">
+          <Link to="/admin" className="hidden">
             View all
           </Link>
         </header>
