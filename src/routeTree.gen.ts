@@ -10,8 +10,16 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as HelpRouteImport } from './routes/help'
 import { Route as LiveRouteImport } from './routes/live'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as ResponsibleGamblingRouteImport } from './routes/responsible-gambling'
 import { Route as UpcomingRouteImport } from './routes/upcoming'
+import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
+import { Route as AuthenticatedMyBetsRouteImport } from './routes/_authenticated/my-bets'
+import { Route as AuthenticatedWalletRouteImport } from './routes/_authenticated/wallet'
 import { Route as CompetitionIdRouteImport } from './routes/competition.$id'
 import { Route as MatchIdRouteImport } from './routes/match.$id'
 
@@ -20,15 +28,54 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HelpRoute = HelpRouteImport.update({
+  id: '/help',
+  path: '/help',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LiveRoute = LiveRouteImport.update({
   id: '/live',
   path: '/live',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResponsibleGamblingRoute = ResponsibleGamblingRouteImport.update({
+  id: '/responsible-gambling',
+  path: '/responsible-gambling',
   getParentRoute: () => rootRouteImport,
 } as any)
 const UpcomingRoute = UpcomingRouteImport.update({
   id: '/upcoming',
   path: '/upcoming',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedMyBetsRoute = AuthenticatedMyBetsRouteImport.update({
+  id: '/my-bets',
+  path: '/my-bets',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedWalletRoute = AuthenticatedWalletRouteImport.update({
+  id: '/wallet',
+  path: '/wallet',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const CompetitionIdRoute = CompetitionIdRouteImport.update({
   id: '/competition/$id',
@@ -43,38 +90,102 @@ const MatchIdRoute = MatchIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/help': typeof HelpRoute
   '/live': typeof LiveRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/responsible-gambling': typeof ResponsibleGamblingRoute
   '/upcoming': typeof UpcomingRoute
+  '/account': typeof AuthenticatedAccountRoute
+  '/my-bets': typeof AuthenticatedMyBetsRoute
+  '/wallet': typeof AuthenticatedWalletRoute
   '/competition/$id': typeof CompetitionIdRoute
   '/match/$id': typeof MatchIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/help': typeof HelpRoute
   '/live': typeof LiveRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/responsible-gambling': typeof ResponsibleGamblingRoute
   '/upcoming': typeof UpcomingRoute
+  '/account': typeof AuthenticatedAccountRoute
+  '/my-bets': typeof AuthenticatedMyBetsRoute
+  '/wallet': typeof AuthenticatedWalletRoute
   '/competition/$id': typeof CompetitionIdRoute
   '/match/$id': typeof MatchIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/help': typeof HelpRoute
   '/live': typeof LiveRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/responsible-gambling': typeof ResponsibleGamblingRoute
   '/upcoming': typeof UpcomingRoute
+  '/_authenticated/account': typeof AuthenticatedAccountRoute
+  '/_authenticated/my-bets': typeof AuthenticatedMyBetsRoute
+  '/_authenticated/wallet': typeof AuthenticatedWalletRoute
   '/competition/$id': typeof CompetitionIdRoute
   '/match/$id': typeof MatchIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/live' | '/upcoming' | '/competition/$id' | '/match/$id'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/help'
+    | '/live'
+    | '/reset-password'
+    | '/responsible-gambling'
+    | '/upcoming'
+    | '/account'
+    | '/my-bets'
+    | '/wallet'
+    | '/competition/$id'
+    | '/match/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/live' | '/upcoming' | '/competition/$id' | '/match/$id'
+  to:
+    | '/'
+    | '/auth'
+    | '/help'
+    | '/live'
+    | '/reset-password'
+    | '/responsible-gambling'
+    | '/upcoming'
+    | '/account'
+    | '/my-bets'
+    | '/wallet'
+    | '/competition/$id'
+    | '/match/$id'
   id:
-    '__root__' | '/' | '/live' | '/upcoming' | '/competition/$id' | '/match/$id'
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/help'
+    | '/live'
+    | '/reset-password'
+    | '/responsible-gambling'
+    | '/upcoming'
+    | '/_authenticated/account'
+    | '/_authenticated/my-bets'
+    | '/_authenticated/wallet'
+    | '/competition/$id'
+    | '/match/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
+  HelpRoute: typeof HelpRoute
   LiveRoute: typeof LiveRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
+  ResponsibleGamblingRoute: typeof ResponsibleGamblingRoute
   UpcomingRoute: typeof UpcomingRoute
   CompetitionIdRoute: typeof CompetitionIdRoute
   MatchIdRoute: typeof MatchIdRoute
@@ -89,11 +200,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/help': {
+      id: '/help'
+      path: '/help'
+      fullPath: '/help'
+      preLoaderRoute: typeof HelpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/live': {
       id: '/live'
       path: '/live'
       fullPath: '/live'
       preLoaderRoute: typeof LiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/responsible-gambling': {
+      id: '/responsible-gambling'
+      path: '/responsible-gambling'
+      fullPath: '/responsible-gambling'
+      preLoaderRoute: typeof ResponsibleGamblingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/upcoming': {
@@ -102,6 +248,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/upcoming'
       preLoaderRoute: typeof UpcomingRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/account': {
+      id: '/_authenticated/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AuthenticatedAccountRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/my-bets': {
+      id: '/_authenticated/my-bets'
+      path: '/my-bets'
+      fullPath: '/my-bets'
+      preLoaderRoute: typeof AuthenticatedMyBetsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/wallet': {
+      id: '/_authenticated/wallet'
+      path: '/wallet'
+      fullPath: '/wallet'
+      preLoaderRoute: typeof AuthenticatedWalletRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/competition/$id': {
       id: '/competition/$id'
@@ -120,9 +287,29 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
+  AuthenticatedMyBetsRoute: typeof AuthenticatedMyBetsRoute
+  AuthenticatedWalletRoute: typeof AuthenticatedWalletRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAccountRoute: AuthenticatedAccountRoute,
+  AuthenticatedMyBetsRoute: AuthenticatedMyBetsRoute,
+  AuthenticatedWalletRoute: AuthenticatedWalletRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
+  HelpRoute: HelpRoute,
   LiveRoute: LiveRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
+  ResponsibleGamblingRoute: ResponsibleGamblingRoute,
   UpcomingRoute: UpcomingRoute,
   CompetitionIdRoute: CompetitionIdRoute,
   MatchIdRoute: MatchIdRoute,
