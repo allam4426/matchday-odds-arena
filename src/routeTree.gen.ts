@@ -18,10 +18,13 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ResponsibleGamblingRouteImport } from './routes/responsible-gambling'
 import { Route as UpcomingRouteImport } from './routes/upcoming'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedMyBetsRouteImport } from './routes/_authenticated/my-bets'
 import { Route as AuthenticatedWalletRouteImport } from './routes/_authenticated/wallet'
 import { Route as CompetitionIdRouteImport } from './routes/competition.$id'
 import { Route as MatchIdRouteImport } from './routes/match.$id'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
+import { Route as AuthenticatedAdminMatchesIndexRouteImport } from './routes/_authenticated/admin.matches.index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -67,6 +70,11 @@ const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
   path: '/account',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedMyBetsRoute = AuthenticatedMyBetsRouteImport.update({
   id: '/my-bets',
   path: '/my-bets',
@@ -87,6 +95,17 @@ const MatchIdRoute = MatchIdRouteImport.update({
   path: '/match/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const AuthenticatedAdminMatchesIndexRoute =
+  AuthenticatedAdminMatchesIndexRouteImport.update({
+    id: '/matches/',
+    path: '/matches/',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -97,10 +116,13 @@ export interface FileRoutesByFullPath {
   '/responsible-gambling': typeof ResponsibleGamblingRoute
   '/upcoming': typeof UpcomingRoute
   '/account': typeof AuthenticatedAccountRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/my-bets': typeof AuthenticatedMyBetsRoute
   '/wallet': typeof AuthenticatedWalletRoute
   '/competition/$id': typeof CompetitionIdRoute
   '/match/$id': typeof MatchIdRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/admin/matches/': typeof AuthenticatedAdminMatchesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -115,6 +137,8 @@ export interface FileRoutesByTo {
   '/wallet': typeof AuthenticatedWalletRoute
   '/competition/$id': typeof CompetitionIdRoute
   '/match/$id': typeof MatchIdRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
+  '/admin/matches': typeof AuthenticatedAdminMatchesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -127,10 +151,13 @@ export interface FileRoutesById {
   '/responsible-gambling': typeof ResponsibleGamblingRoute
   '/upcoming': typeof UpcomingRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/my-bets': typeof AuthenticatedMyBetsRoute
   '/_authenticated/wallet': typeof AuthenticatedWalletRoute
   '/competition/$id': typeof CompetitionIdRoute
   '/match/$id': typeof MatchIdRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/admin/matches/': typeof AuthenticatedAdminMatchesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -143,10 +170,13 @@ export interface FileRouteTypes {
     | '/responsible-gambling'
     | '/upcoming'
     | '/account'
+    | '/admin'
     | '/my-bets'
     | '/wallet'
     | '/competition/$id'
     | '/match/$id'
+    | '/admin/'
+    | '/admin/matches/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -161,6 +191,8 @@ export interface FileRouteTypes {
     | '/wallet'
     | '/competition/$id'
     | '/match/$id'
+    | '/admin'
+    | '/admin/matches'
   id:
     | '__root__'
     | '/'
@@ -172,10 +204,13 @@ export interface FileRouteTypes {
     | '/responsible-gambling'
     | '/upcoming'
     | '/_authenticated/account'
+    | '/_authenticated/admin'
     | '/_authenticated/my-bets'
     | '/_authenticated/wallet'
     | '/competition/$id'
     | '/match/$id'
+    | '/_authenticated/admin/'
+    | '/_authenticated/admin/matches/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -256,6 +291,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAccountRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/my-bets': {
       id: '/_authenticated/my-bets'
       path: '/my-bets'
@@ -284,17 +326,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MatchIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/matches/': {
+      id: '/_authenticated/admin/matches/'
+      path: '/matches'
+      fullPath: '/admin/matches/'
+      preLoaderRoute: typeof AuthenticatedAdminMatchesIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
   }
 }
 
+interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+  AuthenticatedAdminMatchesIndexRoute: typeof AuthenticatedAdminMatchesIndexRoute
+}
+
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+  AuthenticatedAdminMatchesIndexRoute: AuthenticatedAdminMatchesIndexRoute,
+}
+
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedMyBetsRoute: typeof AuthenticatedMyBetsRoute
   AuthenticatedWalletRoute: typeof AuthenticatedWalletRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedMyBetsRoute: AuthenticatedMyBetsRoute,
   AuthenticatedWalletRoute: AuthenticatedWalletRoute,
 }
