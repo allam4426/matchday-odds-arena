@@ -125,6 +125,9 @@ function SignIn({ redirect }: { redirect?: string }) {
           Create an account
         </Link>
       </p>
+      <p className="text-center text-xs text-muted-foreground">
+        <Link to="/admin-login" className="underline">Staff login</Link>
+      </p>
     </form>
   );
 }

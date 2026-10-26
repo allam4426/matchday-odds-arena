@@ -10,4 +10,5 @@
 - [x] Admin: overview, matches & odds & settlement, deposits, withdrawals
 - [ ] Admin: bets, users/roles, audit log, settings pages (backend functions exist; screens not built yet)
 - [ ] End-to-end check while signed in (not yet run)
-- [ ] (Blocked: needs provider credentials) Licensed sports-data / odds feed integration
+- [x] Staff login page + admin bank settings page
+- [ ] (Blocked: needs sports-data API key from user) Real fixtures, automatic live scores and odds
