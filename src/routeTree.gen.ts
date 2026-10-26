@@ -28,6 +28,7 @@ import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminDepositsRouteImport } from './routes/_authenticated/admin.deposits'
 import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
 import { Route as AuthenticatedAdminWithdrawalsRouteImport } from './routes/_authenticated/admin.withdrawals'
+import { Route as ApiPublicSyncSportsRouteImport } from './routes/api/public/sync-sports'
 import { Route as AuthenticatedAdminMatchesIndexRouteImport } from './routes/_authenticated/admin.matches.index'
 import { Route as AuthenticatedAdminMatchesIdRouteImport } from './routes/_authenticated/admin.matches.$id'
 
@@ -128,6 +129,11 @@ const AuthenticatedAdminWithdrawalsRoute =
     path: '/withdrawals',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const ApiPublicSyncSportsRoute = ApiPublicSyncSportsRouteImport.update({
+  id: '/api/public/sync-sports',
+  path: '/api/public/sync-sports',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAdminMatchesIndexRoute =
   AuthenticatedAdminMatchesIndexRouteImport.update({
     id: '/matches/',
@@ -159,6 +165,7 @@ export interface FileRoutesByFullPath {
   '/admin/deposits': typeof AuthenticatedAdminDepositsRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/withdrawals': typeof AuthenticatedAdminWithdrawalsRoute
+  '/api/public/sync-sports': typeof ApiPublicSyncSportsRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/admin/matches/$id': typeof AuthenticatedAdminMatchesIdRoute
   '/admin/matches/': typeof AuthenticatedAdminMatchesIndexRoute
@@ -180,6 +187,7 @@ export interface FileRoutesByTo {
   '/admin/deposits': typeof AuthenticatedAdminDepositsRoute
   '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/withdrawals': typeof AuthenticatedAdminWithdrawalsRoute
+  '/api/public/sync-sports': typeof ApiPublicSyncSportsRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/admin/matches/$id': typeof AuthenticatedAdminMatchesIdRoute
   '/admin/matches': typeof AuthenticatedAdminMatchesIndexRoute
@@ -204,6 +212,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/deposits': typeof AuthenticatedAdminDepositsRoute
   '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/_authenticated/admin/withdrawals': typeof AuthenticatedAdminWithdrawalsRoute
+  '/api/public/sync-sports': typeof ApiPublicSyncSportsRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/admin/matches/$id': typeof AuthenticatedAdminMatchesIdRoute
   '/_authenticated/admin/matches/': typeof AuthenticatedAdminMatchesIndexRoute
@@ -228,6 +237,7 @@ export interface FileRouteTypes {
     | '/admin/deposits'
     | '/admin/settings'
     | '/admin/withdrawals'
+    | '/api/public/sync-sports'
     | '/admin/'
     | '/admin/matches/$id'
     | '/admin/matches/'
@@ -249,6 +259,7 @@ export interface FileRouteTypes {
     | '/admin/deposits'
     | '/admin/settings'
     | '/admin/withdrawals'
+    | '/api/public/sync-sports'
     | '/admin'
     | '/admin/matches/$id'
     | '/admin/matches'
@@ -272,6 +283,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/deposits'
     | '/_authenticated/admin/settings'
     | '/_authenticated/admin/withdrawals'
+    | '/api/public/sync-sports'
     | '/_authenticated/admin/'
     | '/_authenticated/admin/matches/$id'
     | '/_authenticated/admin/matches/'
@@ -289,6 +301,7 @@ export interface RootRouteChildren {
   UpcomingRoute: typeof UpcomingRoute
   CompetitionIdRoute: typeof CompetitionIdRoute
   MatchIdRoute: typeof MatchIdRoute
+  ApiPublicSyncSportsRoute: typeof ApiPublicSyncSportsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -426,6 +439,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminWithdrawalsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/api/public/sync-sports': {
+      id: '/api/public/sync-sports'
+      path: '/api/public/sync-sports'
+      fullPath: '/api/public/sync-sports'
+      preLoaderRoute: typeof ApiPublicSyncSportsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/admin/matches/': {
       id: '/_authenticated/admin/matches/'
       path: '/matches'
@@ -493,6 +513,7 @@ const rootRouteChildren: RootRouteChildren = {
   UpcomingRoute: UpcomingRoute,
   CompetitionIdRoute: CompetitionIdRoute,
   MatchIdRoute: MatchIdRoute,
+  ApiPublicSyncSportsRoute: ApiPublicSyncSportsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
