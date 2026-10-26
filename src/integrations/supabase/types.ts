@@ -172,8 +172,10 @@ export type Database = {
           id: string
           is_featured: boolean
           name: string
+          provider_ref: string | null
           sort_order: number
           sport: string
+          standings_synced_at: string | null
         }
         Insert: {
           country: string
@@ -181,8 +183,10 @@ export type Database = {
           id?: string
           is_featured?: boolean
           name: string
+          provider_ref?: string | null
           sort_order?: number
           sport?: string
+          standings_synced_at?: string | null
         }
         Update: {
           country?: string
@@ -190,8 +194,10 @@ export type Database = {
           id?: string
           is_featured?: boolean
           name?: string
+          provider_ref?: string | null
           sort_order?: number
           sport?: string
+          standings_synced_at?: string | null
         }
         Relationships: []
       }
@@ -546,6 +552,42 @@ export type Database = {
         }
         Relationships: []
       }
+      provider_team_stats: {
+        Row: {
+          competition_ref: string
+          goals_against: number
+          goals_for: number
+          played: number
+          points: number
+          position: number | null
+          team_name: string
+          team_ref: string
+          updated_at: string
+        }
+        Insert: {
+          competition_ref: string
+          goals_against?: number
+          goals_for?: number
+          played?: number
+          points?: number
+          position?: number | null
+          team_name: string
+          team_ref: string
+          updated_at?: string
+        }
+        Update: {
+          competition_ref?: string
+          goals_against?: number
+          goals_for?: number
+          played?: number
+          points?: number
+          position?: number | null
+          team_name?: string
+          team_ref?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       rg_limits: {
         Row: {
           daily_deposit_limit_minor: number | null
@@ -798,6 +840,10 @@ export type Database = {
         }
         Returns: number
       }
+      _provider_settle_match: {
+        Args: { _a: number; _h: number; _match: string; _void: boolean }
+        Returns: number
+      }
       _settle_bet: { Args: { _bet: string }; Returns: undefined }
       admin_create_match: {
         Args: {
@@ -900,6 +946,7 @@ export type Database = {
         }
         Returns: Json
       }
+      provider_sync: { Args: { _matches: Json }; Returns: Json }
       request_withdrawal: {
         Args: {
           _account_name: string

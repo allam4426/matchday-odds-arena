@@ -8,6 +8,13 @@
       "when": 1792937775690,
       "tag": "0000_sportsbook_core",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792975711868,
+      "tag": "0001_football_data_provider_sync",
+      "breakpoints": true
     }
   ]
 }
