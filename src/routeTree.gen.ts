@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AdminLoginRouteImport } from './routes/admin-login'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as HelpRouteImport } from './routes/help'
 import { Route as LiveRouteImport } from './routes/live'
@@ -25,6 +26,7 @@ import { Route as CompetitionIdRouteImport } from './routes/competition.$id'
 import { Route as MatchIdRouteImport } from './routes/match.$id'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminDepositsRouteImport } from './routes/_authenticated/admin.deposits'
+import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authenticated/admin.settings'
 import { Route as AuthenticatedAdminWithdrawalsRouteImport } from './routes/_authenticated/admin.withdrawals'
 import { Route as AuthenticatedAdminMatchesIndexRouteImport } from './routes/_authenticated/admin.matches.index'
 import { Route as AuthenticatedAdminMatchesIdRouteImport } from './routes/_authenticated/admin.matches.$id'
@@ -36,6 +38,11 @@ const IndexRoute = IndexRouteImport.update({
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLoginRoute = AdminLoginRouteImport.update({
+  id: '/admin-login',
+  path: '/admin-login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -109,6 +116,12 @@ const AuthenticatedAdminDepositsRoute =
     path: '/deposits',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminSettingsRoute =
+  AuthenticatedAdminSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminWithdrawalsRoute =
   AuthenticatedAdminWithdrawalsRouteImport.update({
     id: '/withdrawals',
@@ -130,6 +143,7 @@ const AuthenticatedAdminMatchesIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin-login': typeof AdminLoginRoute
   '/auth': typeof AuthRoute
   '/help': typeof HelpRoute
   '/live': typeof LiveRoute
@@ -143,6 +157,7 @@ export interface FileRoutesByFullPath {
   '/competition/$id': typeof CompetitionIdRoute
   '/match/$id': typeof MatchIdRoute
   '/admin/deposits': typeof AuthenticatedAdminDepositsRoute
+  '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/withdrawals': typeof AuthenticatedAdminWithdrawalsRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/admin/matches/$id': typeof AuthenticatedAdminMatchesIdRoute
@@ -150,6 +165,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin-login': typeof AdminLoginRoute
   '/auth': typeof AuthRoute
   '/help': typeof HelpRoute
   '/live': typeof LiveRoute
@@ -162,6 +178,7 @@ export interface FileRoutesByTo {
   '/competition/$id': typeof CompetitionIdRoute
   '/match/$id': typeof MatchIdRoute
   '/admin/deposits': typeof AuthenticatedAdminDepositsRoute
+  '/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/admin/withdrawals': typeof AuthenticatedAdminWithdrawalsRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/admin/matches/$id': typeof AuthenticatedAdminMatchesIdRoute
@@ -171,6 +188,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/admin-login': typeof AdminLoginRoute
   '/auth': typeof AuthRoute
   '/help': typeof HelpRoute
   '/live': typeof LiveRoute
@@ -184,6 +202,7 @@ export interface FileRoutesById {
   '/competition/$id': typeof CompetitionIdRoute
   '/match/$id': typeof MatchIdRoute
   '/_authenticated/admin/deposits': typeof AuthenticatedAdminDepositsRoute
+  '/_authenticated/admin/settings': typeof AuthenticatedAdminSettingsRoute
   '/_authenticated/admin/withdrawals': typeof AuthenticatedAdminWithdrawalsRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/admin/matches/$id': typeof AuthenticatedAdminMatchesIdRoute
@@ -193,6 +212,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin-login'
     | '/auth'
     | '/help'
     | '/live'
@@ -206,6 +226,7 @@ export interface FileRouteTypes {
     | '/competition/$id'
     | '/match/$id'
     | '/admin/deposits'
+    | '/admin/settings'
     | '/admin/withdrawals'
     | '/admin/'
     | '/admin/matches/$id'
@@ -213,6 +234,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin-login'
     | '/auth'
     | '/help'
     | '/live'
@@ -225,6 +247,7 @@ export interface FileRouteTypes {
     | '/competition/$id'
     | '/match/$id'
     | '/admin/deposits'
+    | '/admin/settings'
     | '/admin/withdrawals'
     | '/admin'
     | '/admin/matches/$id'
@@ -233,6 +256,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/admin-login'
     | '/auth'
     | '/help'
     | '/live'
@@ -246,6 +270,7 @@ export interface FileRouteTypes {
     | '/competition/$id'
     | '/match/$id'
     | '/_authenticated/admin/deposits'
+    | '/_authenticated/admin/settings'
     | '/_authenticated/admin/withdrawals'
     | '/_authenticated/admin/'
     | '/_authenticated/admin/matches/$id'
@@ -255,6 +280,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AdminLoginRoute: typeof AdminLoginRoute
   AuthRoute: typeof AuthRoute
   HelpRoute: typeof HelpRoute
   LiveRoute: typeof LiveRoute
@@ -279,6 +305,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin-login': {
+      id: '/admin-login'
+      path: '/admin-login'
+      fullPath: '/admin-login'
+      preLoaderRoute: typeof AdminLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -379,6 +412,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminDepositsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/settings': {
+      id: '/_authenticated/admin/settings'
+      path: '/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AuthenticatedAdminSettingsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/withdrawals': {
       id: '/_authenticated/admin/withdrawals'
       path: '/withdrawals'
@@ -405,6 +445,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminDepositsRoute: typeof AuthenticatedAdminDepositsRoute
+  AuthenticatedAdminSettingsRoute: typeof AuthenticatedAdminSettingsRoute
   AuthenticatedAdminWithdrawalsRoute: typeof AuthenticatedAdminWithdrawalsRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedAdminMatchesIdRoute: typeof AuthenticatedAdminMatchesIdRoute
@@ -413,6 +454,7 @@ interface AuthenticatedAdminRouteChildren {
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminDepositsRoute: AuthenticatedAdminDepositsRoute,
+  AuthenticatedAdminSettingsRoute: AuthenticatedAdminSettingsRoute,
   AuthenticatedAdminWithdrawalsRoute: AuthenticatedAdminWithdrawalsRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   AuthenticatedAdminMatchesIdRoute: AuthenticatedAdminMatchesIdRoute,
@@ -442,6 +484,7 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AdminLoginRoute: AdminLoginRoute,
   AuthRoute: AuthRoute,
   HelpRoute: HelpRoute,
   LiveRoute: LiveRoute,
