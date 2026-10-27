@@ -44,7 +44,7 @@ function SyncFeedCard({ provider }: { provider: { name: string | null; status: s
             setBusy(true);
             try {
               const r = await sync();
-              toast.success(`Updated ${r.matches.fetched} matches · ${r.matches.bets_settled} bets settled`);
+              toast.success(`Updated ${r.matches.fetched} matches`);
               qc.invalidateQueries();
             } catch (e) {
               toast.error(parseRpcError(e).message);
