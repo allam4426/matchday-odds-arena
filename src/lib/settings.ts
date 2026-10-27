@@ -9,6 +9,18 @@ export type BankDetails = {
   instructions: string;
 };
 
+export type BankAccount = BankDetails & { id: string; visible: boolean };
+
+export const BANK_PRESETS = ["Maldives Islamic Bank", "Bank of Maldives"];
+
+/** Bank accounts customers can see; falls back to the legacy single account. */
+export function visibleBanks(s: AppSettings): BankAccount[] {
+  const list = s.bank_accounts ?? [];
+  if (list.length) return list.filter((b) => b.visible && b.account_number.trim());
+  const b = s.bank_details;
+  return b.account_number && b.account_number !== "Not configured" ? [{ ...b, id: "legacy", visible: true }] : [];
+}
+
 export type ProviderInfo = { name: string | null; status: string; last_sync_at: string | null };
 
 export type AppSettings = {
