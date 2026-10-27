@@ -138,18 +138,17 @@ function AccountArea() {
     <div className="flex items-center gap-1.5">
       <Link
         to="/wallet"
-        className="hidden flex-col items-end rounded-md px-2 py-1 leading-tight hover:bg-secondary sm:flex"
+        search={{ tab: "deposit" }}
+        aria-label="Wallet and deposit"
+        className="flex items-center gap-2 rounded-md border border-primary/60 py-1 pl-2.5 pr-1 hover:bg-secondary"
       >
-        <span className="text-[10px] uppercase tracking-wide text-muted-foreground">Balance</span>
-        <span className="font-mono text-sm font-bold text-primary tabular">
+        <span className="font-mono text-sm font-bold text-foreground tabular">
           {formatMoney(wallet?.available_minor ?? 0, settings.currency)}
         </span>
+        <span className="grid h-7 w-8 place-items-center rounded bg-primary text-primary-foreground">
+          <Wallet className="h-4 w-4" />
+        </span>
       </Link>
-      <Button asChild size="sm" className="hidden font-bold sm:inline-flex">
-        <Link to="/wallet" search={{ tab: "deposit" }}>
-          Deposit
-        </Link>
-      </Button>
       <NotificationsBell />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -264,11 +263,6 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen">
-      {!settings.real_money_enabled && (
-        <div className="bg-warning/15 px-4 py-1 text-center text-[11px] font-medium text-warning">
-          Test mode — real-money betting stays disabled until the operator confirms licensing and payment approval.
-        </div>
-      )}
       <header className="sticky top-0 z-40 border-b border-border bg-header/95 backdrop-blur">
         <div className="flex h-14 items-center gap-3 px-3 sm:px-4">
           {!isAdmin && (

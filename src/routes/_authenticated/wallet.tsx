@@ -131,8 +131,10 @@ function Deposit() {
   const [note, setNote] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
-  const bank = settings.bank_details;
-  const configured = bank.account_number && bank.account_number !== "Not configured";
+  const banks = visibleBanks(settings);
+  const [bankId, setBankId] = useState<string | null>(null);
+  const bank = banks.find((b) => b.id === bankId) ?? null;
+  const configured = !!bank;
 
   const { data: deposits } = useQuery({
     queryKey: ["wallet", "deposits", user?.id],
@@ -167,7 +169,7 @@ function Deposit() {
         _amount_minor: minor,
         _bank_reference: ref.trim(),
         _slip_path: path,
-        _note: note || undefined,
+        _note: `Paid to: ${bank!.bank_name} ${bank!.account_number}${note ? ` — ${note}` : ""}`,
       });
       if (error) throw error;
       toast.success("Deposit submitted", { description: "We'll credit your wallet once the transfer is verified." });
@@ -191,6 +193,30 @@ function Deposit() {
 
   return (
     <div className="space-y-4">
+      <section className="rounded-lg border border-border bg-card p-4">
+        <h2 className="text-sm font-semibold uppercase tracking-wide">Bank transfer</h2>
+        {banks.length === 0 ? (
+          <p className="mt-2 text-xs font-semibold text-warning">Deposits are unavailable until the operator adds bank details.</p>
+        ) : (
+          <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {banks.map((b) => (
+              <button
+                key={b.id}
+                type="button"
+                onClick={() => setBankId(b.id)}
+                className={cn(
+                  "flex h-20 items-center justify-center rounded-lg border-2 bg-surface px-3 text-center font-display text-sm font-black uppercase leading-tight transition",
+                  bankId === b.id ? "border-primary text-primary" : "border-transparent hover:border-border",
+                )}
+              >
+                <Landmark className="mr-2 h-5 w-5 shrink-0" />
+                {b.bank_name}
+              </button>
+            ))}
+          </div>
+        )}
+      </section>
+      {bank && (
       <div className="grid gap-4 md:grid-cols-2">
         <div className="rounded-lg border border-border bg-card p-4">
           <h2 className="flex items-center gap-2 font-semibold">
@@ -201,10 +227,7 @@ function Deposit() {
             <CopyRow label="Account name" value={bank.account_name} />
             <CopyRow label="Account number" value={bank.account_number} />
           </div>
-          <p className="mt-3 rounded-md bg-surface p-2 text-xs text-muted-foreground">{bank.instructions}</p>
-          {!configured && (
-            <p className="mt-2 text-xs font-semibold text-warning">Deposits are unavailable until the operator adds bank details.</p>
-          )}
+          {bank.instructions && <p className="mt-3 rounded-md bg-surface p-2 text-xs text-muted-foreground">{bank.instructions}</p>}
         </div>
         <form onSubmit={submit} className="space-y-3 rounded-lg border border-border bg-card p-4">
           <h2 className="flex items-center gap-2 font-semibold">
