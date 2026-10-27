@@ -1,11 +1,17 @@
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { format } from "date-fns";
 import { AlertTriangle, CheckCircle2 } from "lucide-react";
+import { toast } from "sonner";
 
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { parseRpcError } from "@/lib/betting";
 import { formatMoney } from "@/lib/money";
 import { useSettings } from "@/lib/settings";
+import { syncSportsNow } from "@/lib/sports-sync.functions";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
@@ -13,6 +19,46 @@ export const Route = createFileRoute("/_authenticated/admin/")({
 });
 
 type Stats = Record<string, number>;
+
+function SyncFeedCard({ provider }: { provider: { name: string | null; status: string; last_sync_at: string | null } }) {
+  const [busy, setBusy] = useState(false);
+  const qc = useQueryClient();
+  const sync = useServerFn(syncSportsNow);
+  const connected = provider.status === "connected";
+  return (
+    <div className={cn("flex items-start gap-3 rounded-lg border p-4", connected ? "border-primary/40 bg-primary/5" : "border-warning/40 bg-warning/5")}>
+      {connected ? <CheckCircle2 className="h-5 w-5 text-primary" /> : <AlertTriangle className="h-5 w-5 text-warning" />}
+      <div className="flex-1 text-sm">
+        <p className="font-semibold">Live matches, scores & odds feed</p>
+        <p className="text-muted-foreground">
+          {connected
+            ? `Connected to ${provider.name}. Updates automatically every minute; bets settle at full time.`
+            : "Not connected yet."}
+          {provider.last_sync_at && ` Last update ${format(new Date(provider.last_sync_at), "d MMM HH:mm")}.`}
+        </p>
+        <Button
+          size="sm"
+          className="mt-2"
+          disabled={busy}
+          onClick={async () => {
+            setBusy(true);
+            try {
+              const r = await sync();
+              toast.success(`Updated ${r.matches.fetched} matches · ${r.matches.bets_settled} bets settled`);
+              qc.invalidateQueries();
+            } catch (e) {
+              toast.error(parseRpcError(e).message);
+            } finally {
+              setBusy(false);
+            }
+          }}
+        >
+          {busy ? "Updating…" : "Sync now"}
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 function Card({ label, value, sub, to, alert }: { label: string; value: string | number; sub?: string; to?: "/admin/deposits" | "/admin/withdrawals" | "/admin/matches"; alert?: boolean }) {
   const inner = (
@@ -79,16 +125,7 @@ function AdminOverview() {
             </p>
           </div>
         </div>
-        <div className="flex items-start gap-3 rounded-lg border border-warning/40 bg-warning/5 p-4">
-          <AlertTriangle className="h-5 w-5 text-warning" />
-          <div className="text-sm">
-            <p className="font-semibold">Sports-data & odds feed</p>
-            <p className="text-muted-foreground">
-              Status: {settings.sports_data_provider.status.replace(/_/g, " ")}. Fixtures and odds are managed manually
-              by traders until a licensed provider is connected.
-            </p>
-          </div>
-        </div>
+        <SyncFeedCard provider={settings.sports_data_provider} />
       </div>
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
