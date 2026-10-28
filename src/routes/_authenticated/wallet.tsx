@@ -15,7 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { parseRpcError } from "@/lib/betting";
 import { formatMoney, maskAccount, parseMoneyToMinor } from "@/lib/money";
-import { useSettings } from "@/lib/settings";
+import { useSettings, visibleBanks } from "@/lib/settings";
 import { DEPOSIT_STATUS_LABEL, LEDGER_TYPE_LABEL, WITHDRAWAL_STATUS_LABEL, useWalletSummary } from "@/lib/wallet";
 import { cn } from "@/lib/utils";
 
@@ -261,6 +261,7 @@ function Deposit() {
           </p>
         </form>
       </div>
+      )}
 
       <section className="rounded-lg border border-border bg-card">
         <h2 className="border-b border-border px-4 py-2 text-sm font-semibold">Deposit requests</h2>

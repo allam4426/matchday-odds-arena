@@ -36,6 +36,7 @@ export type AppSettings = {
   max_combo_selections: number;
   restricted_countries: string[];
   bank_details: BankDetails;
+  bank_accounts: BankAccount[];
   sports_data_provider: ProviderInfo;
 };
 
@@ -52,6 +53,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   max_combo_selections: 12,
   restricted_countries: [],
   bank_details: { bank_name: "", account_name: "", account_number: "", instructions: "" },
+  bank_accounts: [],
   sports_data_provider: { name: null, status: "not_configured", last_sync_at: null },
 };
 
