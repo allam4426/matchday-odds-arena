@@ -43,10 +43,19 @@ function rate(value: number, played: number, avg: number) {
   return (raw * played + PRIOR_GAMES) / (played + PRIOR_GAMES);
 }
 
-export function toOdds(prob: number, margin: number) {
+/** Highest odds ever offered. */
+export const MAX_ODDS = 25;
+/** Highest odds offered while a match is in its first half. */
+export const MAX_ODDS_FIRST_HALF = 10;
+
+export function maxOddsFor(minute: number | null | undefined) {
+  return minute && minute > 0 && minute <= 45 ? MAX_ODDS_FIRST_HALF : MAX_ODDS;
+}
+
+export function toOdds(prob: number, margin: number, cap = MAX_ODDS) {
   const p = Math.min(Math.max(prob, 0.001), 0.999);
   const o = 1 / (p * (1 + margin));
-  return Math.round(Math.min(Math.max(o, 1.01), 100) * 100) / 100;
+  return Math.round(Math.min(Math.max(o, 1.01), cap) * 100) / 100;
 }
 
 export function expectedGoals(input: PricingInput) {
@@ -87,11 +96,14 @@ export function priceMatch(input: PricingInput): PricingResult {
   const total = p1 + pX + p2;
   p1 /= total; pX /= total; p2 /= total; pOver /= total; pBtts /= total;
 
+  const cap = maxOddsFor(input.minute);
+  const t3 = (p: number) => toOdds(p, MARGIN_3WAY, cap);
+  const t2 = (p: number) => toOdds(p, MARGIN_2WAY, cap);
   const odds: MarketOdds = {
-    "1x2": [toOdds(p1, MARGIN_3WAY), toOdds(pX, MARGIN_3WAY), toOdds(p2, MARGIN_3WAY)],
-    dc: [toOdds(p1 + pX, MARGIN_2WAY), toOdds(p1 + p2, MARGIN_2WAY), toOdds(pX + p2, MARGIN_2WAY)],
-    ou25: [toOdds(pOver, MARGIN_2WAY), toOdds(1 - pOver, MARGIN_2WAY)],
-    btts: [toOdds(pBtts, MARGIN_2WAY), toOdds(1 - pBtts, MARGIN_2WAY)],
+    "1x2": [t3(p1), t3(pX), t3(p2)],
+    dc: [t2(p1 + pX), t2(p1 + p2), t2(pX + p2)],
+    ou25: [t2(pOver), t2(1 - pOver)],
+    btts: [t2(pBtts), t2(1 - pBtts)],
   };
 
   const suspend: (keyof MarketOdds)[] = [];
