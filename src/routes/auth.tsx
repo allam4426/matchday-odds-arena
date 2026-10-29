@@ -198,7 +198,7 @@ function SignUp() {
         <h1 className="font-display text-2xl font-black uppercase">Check your email</h1>
         <p className="text-sm text-muted-foreground">
           We sent a confirmation link to <span className="font-semibold text-foreground">{f.email}</span>. Confirm your
-          email to activate your account, then log in.
+          email. An admin will then review and approve your registration before you can log in.
         </p>
         <Link to="/auth" className="text-sm font-semibold text-primary">
           Back to log in
