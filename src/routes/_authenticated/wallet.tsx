@@ -16,6 +16,15 @@ import { useAuth } from "@/hooks/use-auth";
 import { parseRpcError } from "@/lib/betting";
 import { formatMoney, maskAccount, parseMoneyToMinor } from "@/lib/money";
 import { useSettings, visibleBanks } from "@/lib/settings";
+import bmlLogo from "@/assets/bml-logo.png.asset.json";
+import mibLogo from "@/assets/mib-logo.jpeg.asset.json";
+
+function bankLogo(name: string): string | null {
+  const n = name.toLowerCase();
+  if (n.includes("islamic") || n.includes("mib")) return mibLogo.url;
+  if (n.includes("bank of maldives") || n.includes("bml")) return bmlLogo.url;
+  return null;
+}
 import { DEPOSIT_STATUS_LABEL, LEDGER_TYPE_LABEL, WITHDRAWAL_STATUS_LABEL, useWalletSummary } from "@/lib/wallet";
 import { cn } from "@/lib/utils";
 
@@ -205,12 +214,16 @@ function Deposit() {
                 type="button"
                 onClick={() => setBankId(b.id)}
                 className={cn(
-                  "flex h-20 items-center justify-center rounded-lg border-2 bg-surface px-3 text-center font-display text-sm font-black uppercase leading-tight transition",
+                  "flex h-24 flex-col items-center justify-center gap-1.5 rounded-lg border-2 bg-surface px-3 text-center font-display text-sm font-black uppercase leading-tight transition",
                   bankId === b.id ? "border-primary text-primary" : "border-transparent hover:border-border",
                 )}
               >
-                <Landmark className="mr-2 h-5 w-5 shrink-0" />
-                {b.bank_name}
+                {bankLogo(b.bank_name) ? (
+                  <img src={bankLogo(b.bank_name)!} alt="" className="h-10 w-10 rounded-md object-contain" />
+                ) : (
+                  <Landmark className="h-6 w-6 shrink-0" />
+                )}
+                <span className="text-xs">{b.bank_name}</span>
               </button>
             ))}
           </div>

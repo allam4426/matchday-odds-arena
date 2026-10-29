@@ -37,7 +37,7 @@ function MyBets() {
     queryFn: async () => {
       let q = supabase
         .from("bets")
-        .select("*, bet_selections(id, match_label, market_name, selection_label, odds_accepted, result)")
+        .select("*, bet_selections(id, match_label, market_name, selection_label, odds_accepted, result, matches(status, home_score, away_score))")
         .order("placed_at", { ascending: false })
         .limit(100);
       q = tab === "open" ? q.eq("status", "open") : q.neq("status", "open");
@@ -90,10 +90,15 @@ function MyBets() {
                       <p className="text-sm font-semibold">{s.selection_label}</p>
                       <p className="truncate text-xs text-muted-foreground">
                         {s.market_name} · {s.match_label}
+                        {s.matches && s.matches.status !== "scheduled" && (
+                          <span className="ml-1 font-mono font-semibold text-foreground">
+                            ({s.matches.home_score}-{s.matches.away_score})
+                          </span>
+                        )}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      {s.result !== "pending" && <StatusBadge status={s.result} />}
+                      <LegBadge result={s.result} />
                       <span className="font-mono text-sm font-bold">{formatOdds(s.odds_accepted)}</span>
                     </div>
                   </li>
@@ -139,4 +144,16 @@ function MyBets() {
       )}
     </div>
   );
+}
+
+function LegBadge({ result }: { result: string }) {
+  const cls =
+    result === "won"
+      ? "bg-success/20 text-success"
+      : result === "lost"
+        ? "bg-destructive/20 text-destructive"
+        : result === "void"
+          ? "bg-muted text-muted-foreground"
+          : "bg-secondary text-muted-foreground";
+  return <span className={cn("rounded px-1.5 py-0.5 text-[10px] font-bold uppercase", cls)}>{result}</span>;
 }
