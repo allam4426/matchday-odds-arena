@@ -22,6 +22,13 @@
       "when": 1793235758243,
       "tag": "0002_withdrawal_daily_limit",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793235769613,
+      "tag": "0003_mvr_withdrawal_settings",
+      "breakpoints": true
     }
   ]
 }
