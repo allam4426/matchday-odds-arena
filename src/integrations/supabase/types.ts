@@ -362,11 +362,13 @@ export type Database = {
       }
       matches: {
         Row: {
+          away_crest: string | null
           away_score: number
           away_team: string
           competition_id: string
           created_at: string
           created_by: string | null
+          home_crest: string | null
           home_score: number
           home_team: string
           ht_away_score: number | null
@@ -381,11 +383,13 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          away_crest?: string | null
           away_score?: number
           away_team: string
           competition_id: string
           created_at?: string
           created_by?: string | null
+          home_crest?: string | null
           home_score?: number
           home_team: string
           ht_away_score?: number | null
@@ -400,11 +404,13 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          away_crest?: string | null
           away_score?: number
           away_team?: string
           competition_id?: string
           created_at?: string
           created_by?: string | null
+          home_crest?: string | null
           home_score?: number
           home_team?: string
           ht_away_score?: number | null
@@ -507,6 +513,7 @@ export type Database = {
       profiles: {
         Row: {
           admin_note: string | null
+          approved: boolean
           cooling_off_until: string | null
           country: string
           created_at: string
@@ -522,6 +529,7 @@ export type Database = {
         }
         Insert: {
           admin_note?: string | null
+          approved?: boolean
           cooling_off_until?: string | null
           country: string
           created_at?: string
@@ -537,6 +545,7 @@ export type Database = {
         }
         Update: {
           admin_note?: string | null
+          approved?: boolean
           cooling_off_until?: string | null
           country?: string
           created_at?: string
@@ -845,6 +854,10 @@ export type Database = {
         Returns: number
       }
       _settle_bet: { Args: { _bet: string }; Returns: undefined }
+      admin_approve_user: {
+        Args: { _approve: boolean; _user: string }
+        Returns: undefined
+      }
       admin_create_match: {
         Args: {
           _a: number
@@ -946,6 +959,7 @@ export type Database = {
         }
         Returns: Json
       }
+      provider_set_crests: { Args: { _items: Json }; Returns: undefined }
       provider_sync: { Args: { _matches: Json }; Returns: Json }
       request_withdrawal: {
         Args: {

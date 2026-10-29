@@ -128,7 +128,7 @@ function AccountArea() {
         </Button>
         <Button asChild size="sm" className="font-bold">
           <Link to="/auth" search={{ mode: "signup" }}>
-            Join
+            Register
           </Link>
         </Button>
       </div>

@@ -23,9 +23,9 @@ export const Route = createFileRoute("/auth")({
   }),
   head: () => ({
     meta: [
-      { title: "Log in or Join | Pitchside" },
+      { title: "Log in or Register | Pitchside" },
       { name: "description", content: "Log in to your Pitchside account or register to start betting responsibly." },
-      { property: "og:title", content: "Log in or Join | Pitchside" },
+      { property: "og:title", content: "Log in or Register | Pitchside" },
       { property: "og:description", content: "Log in or create your Pitchside account." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -81,10 +81,17 @@ function SignIn({ redirect }: { redirect?: string }) {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setBusy(false);
+    const { data: signed, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
+      setBusy(false);
       toast.error(error.message === "Email not confirmed" ? "Please confirm your email first." : error.message);
+      return;
+    }
+    const { data: prof } = await supabase.from("profiles").select("approved").eq("id", signed.user.id).maybeSingle();
+    setBusy(false);
+    if (prof && !prof.approved) {
+      await supabase.auth.signOut();
+      toast.error("Your registration is waiting for admin approval. You can log in once it is approved.");
       return;
     }
     navigate({ to: (redirect as "/") ?? "/", replace: true });
@@ -191,7 +198,7 @@ function SignUp() {
         <h1 className="font-display text-2xl font-black uppercase">Check your email</h1>
         <p className="text-sm text-muted-foreground">
           We sent a confirmation link to <span className="font-semibold text-foreground">{f.email}</span>. Confirm your
-          email to activate your account, then log in.
+          email. An admin will then review and approve your registration before you can log in.
         </p>
         <Link to="/auth" className="text-sm font-semibold text-primary">
           Back to log in
@@ -203,7 +210,7 @@ function SignUp() {
   return (
     <form onSubmit={submit} className="space-y-3">
       <div>
-        <h1 className="font-display text-2xl font-black uppercase">Create account</h1>
+        <h1 className="font-display text-2xl font-black uppercase">Register</h1>
         <p className="text-sm text-muted-foreground">Use your real details — they're required for verification and withdrawals.</p>
       </div>
       <div className="grid grid-cols-2 gap-3">
@@ -260,7 +267,7 @@ function SignUp() {
         </span>
       </label>
       <Button type="submit" className="w-full font-bold uppercase" disabled={busy}>
-        {busy ? "Creating account…" : "Create account"}
+        {busy ? "Registering…" : "Register"}
       </Button>
       <p className="text-center text-sm text-muted-foreground">
         Already registered?{" "}
