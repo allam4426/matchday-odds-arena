@@ -1,7 +1,10 @@
 /** All money is stored and moved in integer minor units (e.g. cents). */
 
-export function formatMoney(minor: number | null | undefined, currency = "USD"): string {
+export function formatMoney(minor: number | null | undefined, currency = "MVR"): string {
   const value = (minor ?? 0) / 100;
+  if (currency === "MVR") {
+    return `MVR ${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
   try {
     return new Intl.NumberFormat("en-US", {
       style: "currency",

@@ -41,7 +41,7 @@ export type AppSettings = {
 };
 
 export const DEFAULT_SETTINGS: AppSettings = {
-  currency: "USD",
+  currency: "MVR",
   real_money_enabled: false,
   min_deposit_minor: 1000,
   max_deposit_minor: 1_000_000,

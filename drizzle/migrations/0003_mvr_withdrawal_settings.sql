@@ -1,0 +1,2 @@
+INSERT INTO public.system_settings(key, value) VALUES ('currency','"MVR"'::jsonb),('max_withdrawal_minor','2500000'::jsonb),('max_withdrawals_per_day','2'::jsonb)
+ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = now();
