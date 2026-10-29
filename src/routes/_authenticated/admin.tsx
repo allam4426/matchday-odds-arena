@@ -28,6 +28,7 @@ const NAV = [
   { to: "/admin/matches", label: "Matches & Odds" },
   { to: "/admin/deposits", label: "Deposits" },
   { to: "/admin/withdrawals", label: "Withdrawals" },
+  { to: "/admin/users", label: "Registrations" },
   { to: "/admin/settings", label: "Bank settings" },
 ] as const;
 

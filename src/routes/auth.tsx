@@ -81,10 +81,17 @@ function SignIn({ redirect }: { redirect?: string }) {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    setBusy(false);
+    const { data: signed, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
+      setBusy(false);
       toast.error(error.message === "Email not confirmed" ? "Please confirm your email first." : error.message);
+      return;
+    }
+    const { data: prof } = await supabase.from("profiles").select("approved").eq("id", signed.user.id).maybeSingle();
+    setBusy(false);
+    if (prof && !prof.approved) {
+      await supabase.auth.signOut();
+      toast.error("Your registration is waiting for admin approval. You can log in once it is approved.");
       return;
     }
     navigate({ to: (redirect as "/") ?? "/", replace: true });
