@@ -507,6 +507,7 @@ export type Database = {
       profiles: {
         Row: {
           admin_note: string | null
+          approved: boolean
           cooling_off_until: string | null
           country: string
           created_at: string
@@ -522,6 +523,7 @@ export type Database = {
         }
         Insert: {
           admin_note?: string | null
+          approved?: boolean
           cooling_off_until?: string | null
           country: string
           created_at?: string
@@ -537,6 +539,7 @@ export type Database = {
         }
         Update: {
           admin_note?: string | null
+          approved?: boolean
           cooling_off_until?: string | null
           country?: string
           created_at?: string
@@ -845,6 +848,10 @@ export type Database = {
         Returns: number
       }
       _settle_bet: { Args: { _bet: string }; Returns: undefined }
+      admin_approve_user: {
+        Args: { _approve: boolean; _user: string }
+        Returns: undefined
+      }
       admin_create_match: {
         Args: {
           _a: number
