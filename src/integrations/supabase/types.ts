@@ -362,11 +362,13 @@ export type Database = {
       }
       matches: {
         Row: {
+          away_crest: string | null
           away_score: number
           away_team: string
           competition_id: string
           created_at: string
           created_by: string | null
+          home_crest: string | null
           home_score: number
           home_team: string
           ht_away_score: number | null
@@ -381,11 +383,13 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          away_crest?: string | null
           away_score?: number
           away_team: string
           competition_id: string
           created_at?: string
           created_by?: string | null
+          home_crest?: string | null
           home_score?: number
           home_team: string
           ht_away_score?: number | null
@@ -400,11 +404,13 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          away_crest?: string | null
           away_score?: number
           away_team?: string
           competition_id?: string
           created_at?: string
           created_by?: string | null
+          home_crest?: string | null
           home_score?: number
           home_team?: string
           ht_away_score?: number | null
@@ -953,6 +959,7 @@ export type Database = {
         }
         Returns: Json
       }
+      provider_set_crests: { Args: { _items: Json }; Returns: undefined }
       provider_sync: { Args: { _matches: Json }; Returns: Json }
       request_withdrawal: {
         Args: {
