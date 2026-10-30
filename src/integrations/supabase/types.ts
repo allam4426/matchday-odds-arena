@@ -853,6 +853,10 @@ export type Database = {
         Args: { _a: number; _h: number; _match: string; _void: boolean }
         Returns: number
       }
+      _provider_settle_match_win: {
+        Args: { _a: number; _h: number; _match: string; _win: Json }
+        Returns: number
+      }
       _settle_bet: { Args: { _bet: string }; Returns: undefined }
       admin_approve_user: {
         Args: { _approve: boolean; _user: string }
