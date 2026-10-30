@@ -37,6 +37,8 @@ export type Match = {
   id: string;
   home_team: string;
   away_team: string;
+  home_crest?: string | null;
+  away_crest?: string | null;
   kickoff_at: string;
   status: MatchStatus;
   minute: number | null;
@@ -52,7 +54,7 @@ export type Match = {
 };
 
 const MATCH_SELECT = `
-  id, home_team, away_team, kickoff_at, status, minute, home_score, away_score, ht_home_score, ht_away_score,
+  id, home_team, away_team, home_crest, away_crest, kickoff_at, status, minute, home_score, away_score, ht_home_score, ht_away_score,
   provenance, is_hidden, updated_at,
   competition:competitions(id, name, country, sport, sort_order, is_featured),
   markets(id, key, name, status, sort_order, selections(id, label, odds, result, sort_order, updated_at))

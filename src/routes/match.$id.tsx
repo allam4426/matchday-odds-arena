@@ -3,7 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { ChevronLeft, Lock } from "lucide-react";
 
-import { kickoffLabel, LiveBadge, ProvenanceBadge } from "@/components/sports/MatchCard";
+import { kickoffLabel, LiveBadge, ProvenanceBadge, TeamCrest } from "@/components/sports/MatchCard";
 import { OddsButton } from "@/components/sports/OddsButton";
 import { StatusBadge } from "@/components/status-badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -62,7 +62,7 @@ function MatchPage() {
           </div>
         </div>
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 py-8">
-          <p className="text-right font-display text-xl font-bold uppercase sm:text-3xl">{match.home_team}</p>
+          <div className="flex flex-col items-end gap-2"><TeamCrest src={match.home_crest} name={match.home_team} size={48} /><p className="text-right font-display text-xl font-bold uppercase sm:text-3xl">{match.home_team}</p></div>
           <div className="text-center">
             {live || match.status === "finished" ? (
               <p className="font-mono text-4xl font-bold text-primary tabular">
@@ -80,7 +80,7 @@ function MatchPage() {
               </p>
             )}
           </div>
-          <p className="font-display text-xl font-bold uppercase sm:text-3xl">{match.away_team}</p>
+          <div className="flex flex-col items-start gap-2"><TeamCrest src={match.away_crest} name={match.away_team} size={48} /><p className="font-display text-xl font-bold uppercase sm:text-3xl">{match.away_team}</p></div>
         </div>
         <div className="border-t border-border px-4 py-2 text-[11px] text-muted-foreground">
           Kick-off {format(new Date(match.kickoff_at), "EEE d MMM yyyy, HH:mm")}
