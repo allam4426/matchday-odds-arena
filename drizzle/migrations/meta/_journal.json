@@ -43,6 +43,13 @@
       "when": 1793236124965,
       "tag": "0005_match_crests",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793318885146,
+      "tag": "0006_full_market_suite",
+      "breakpoints": true
     }
   ]
 }

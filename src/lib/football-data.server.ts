@@ -1,4 +1,7 @@
+import { MARKETS, winners } from "@/lib/markets";
 import { estimateMinute, priceMatch, type TeamRates } from "@/lib/pricing";
+
+const MARKET_DEFS = MARKETS.map((d) => ({ key: d.key, name: d.name, labels: d.labels }));
 
 const BASE = "https://api.football-data.org/v4";
 /** In-play data older than this (minutes after kickoff) is treated as stale and all markets are suspended. */
@@ -111,15 +114,28 @@ export async function syncLiveMatches() {
         home: rates(m.homeTeam.id), away: rates(m.awayTeam.id),
         leagueAvg: leagueAvg.get(String(m.competition.id)),
         minute, homeScore: status === "live" ? hs : 0, awayScore: status === "live" ? as : 0,
+        htHome: status === "live" ? m.score.halfTime.home : null, htAway: status === "live" ? m.score.halfTime.away : null,
       });
       row.odds = priced.odds;
+      row.defs = MARKET_DEFS;
       const suspendAll = status === "live" && (m.status === "SUSPENDED" || elapsed > STALE_AFTER_MIN || (minute ?? 0) >= LIVE_CUTOFF_MIN);
-      row.suspend = suspendAll ? ["1x2", "dc", "ou25", "btts"] : priced.suspend;
+      row.suspend = suspendAll ? MARKETS.map((d) => d.key) : priced.suspend;
     }
     if (status === "finished") {
       // Settle on the 90-minute result; extra time and penalties don't count.
       const reg = m.score.duration !== "REGULAR" && m.score.regularTime ? m.score.regularTime : m.score.fullTime;
-      if (reg.home != null && reg.away != null) { row.settle_h = reg.home; row.settle_a = reg.away; }
+      if (reg.home != null && reg.away != null) {
+        row.settle_h = reg.home; row.settle_a = reg.away;
+        const h1 = m.score.halfTime.home, a1 = m.score.halfTime.away;
+        const win: Record<string, string[]> = {};
+        for (const d of MARKETS) {
+          // Half markets need the half-time score; without it they're left for a trader.
+          if (h1 == null || a1 == null) { if (d.period !== "ft" || d.key === "htft") continue; }
+          const fh = h1 ?? 0, fa = a1 ?? 0;
+          win[d.key] = h1 == null ? winners(d, reg.home, reg.away, 0, 0) : winners(d, fh, fa, reg.home - fh, reg.away - fa);
+        }
+        row.settle_win = win;
+      }
     }
     return row;
   });
