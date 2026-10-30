@@ -20,8 +20,8 @@ type FdMatch = {
   status: string;
   area: { name: string };
   competition: { id: number; code: string; name: string };
-  homeTeam: { id: number; name: string | null; shortName: string | null };
-  awayTeam: { id: number; name: string | null; shortName: string | null };
+  homeTeam: { id: number; name: string | null; shortName: string | null; crest?: string | null };
+  awayTeam: { id: number; name: string | null; shortName: string | null; crest?: string | null };
   score: {
     duration: string;
     fullTime: { home: number | null; away: number | null };
@@ -126,6 +126,8 @@ export async function syncLiveMatches() {
 
   const { data: result, error } = await db.rpc("provider_sync", { _matches: payload as never });
   if (error) throw new Error(error.message);
+  const crests = matches.map((m) => ({ ref: `fd:${m.id}`, hc: m.homeTeam.crest ?? null, ac: m.awayTeam.crest ?? null }));
+  await db.rpc("provider_set_crests", { _items: crests as never });
   return { fetched: matches.length, ...(result as Record<string, number>) };
 }
 

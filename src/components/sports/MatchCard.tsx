@@ -7,6 +7,15 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import type { Match } from "@/lib/sportsbook";
 import { cn } from "@/lib/utils";
 
+export function TeamCrest({ src, name, size = 20 }: { src?: string | null; name: string; size?: number }) {
+  if (src) return <img src={src} alt="" width={size} height={size} loading="lazy" className="shrink-0 object-contain" style={{ width: size, height: size }} />;
+  return (
+    <span className="inline-flex shrink-0 items-center justify-center rounded-full bg-odds font-bold text-muted-foreground" style={{ width: size, height: size, fontSize: size * 0.45 }}>
+      {name.slice(0, 1)}
+    </span>
+  );
+}
+
 export function kickoffLabel(iso: string) {
   const d = new Date(iso);
   if (isToday(d)) return { day: "Today", time: format(d, "HH:mm") };
@@ -67,11 +76,11 @@ export function MatchCard({ match, marketKey }: { match: Match; marketKey: strin
           </div>
           <div className="min-w-0 flex-1 space-y-1">
             <div className="flex items-center justify-between gap-2">
-              <span className="truncate text-sm font-semibold">{match.home_team}</span>
+              <span className="flex min-w-0 items-center gap-2"><TeamCrest src={match.home_crest} name={match.home_team} /><span className="truncate text-sm font-semibold">{match.home_team}</span></span>
               {live && <span className="font-mono text-sm font-bold text-primary tabular">{match.home_score}</span>}
             </div>
             <div className="flex items-center justify-between gap-2">
-              <span className="truncate text-sm font-semibold">{match.away_team}</span>
+              <span className="flex min-w-0 items-center gap-2"><TeamCrest src={match.away_crest} name={match.away_team} /><span className="truncate text-sm font-semibold">{match.away_team}</span></span>
               {live && <span className="font-mono text-sm font-bold text-primary tabular">{match.away_score}</span>}
             </div>
           </div>
