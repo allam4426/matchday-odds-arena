@@ -89,22 +89,42 @@ function MatchPage() {
         </div>
       </section>
 
+      <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1">
+        {CATEGORY_TABS.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            onClick={() => setTab(t.id)}
+            className={`shrink-0 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${tab === t.id ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card text-muted-foreground hover:text-foreground"}`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
       <div className="grid gap-3 md:grid-cols-2">
-        {match.markets.map((mk) => {
+        {visibleMarkets.length === 0 && (
+          <p className="rounded-lg border border-border bg-card p-6 text-center text-sm text-muted-foreground md:col-span-2">No markets in this category right now.</p>
+        )}
+        {visibleMarkets.map((mk) => {
           const open = isBettable(match, mk);
+          const n = mk.selections.length;
+          const cols = n === 2 ? "grid-cols-2" : n === 3 || n === 9 ? "grid-cols-3" : "grid-cols-2 sm:grid-cols-3";
           return (
-            <section key={mk.id} className="rounded-lg border border-border bg-card">
-              <header className="flex items-center justify-between border-b border-border px-4 py-2">
-                <h2 className="text-sm font-semibold">{mk.name}</h2>
+            <section key={mk.id} className="min-w-0 rounded-lg border border-border bg-card">
+              <header className="flex items-center justify-between gap-2 border-b border-border px-4 py-2">
+                <h2 className="min-w-0 truncate text-sm font-semibold">{mk.name}</h2>
                 {!open && (
-                  <span className="flex items-center gap-1 text-[11px] font-semibold uppercase text-warning">
+                  <span className="flex shrink-0 items-center gap-1 text-[11px] font-semibold uppercase text-warning">
                     <Lock className="h-3 w-3" /> {mk.status === "open" ? "Closed" : mk.status}
                   </span>
                 )}
               </header>
-              <div className="flex gap-1.5 p-3">
+              <div className={`grid gap-1.5 p-3 ${cols}`}>
                 {mk.selections.map((s) => (
-                  <OddsButton key={s.id} match={match} market={mk} selection={s} />
+                  <div key={s.id} className="min-w-0">
+                    <OddsButton match={match} market={mk} selection={s} />
+                  </div>
                 ))}
               </div>
             </section>
