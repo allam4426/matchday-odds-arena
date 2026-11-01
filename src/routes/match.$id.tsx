@@ -49,7 +49,7 @@ function MatchPage() {
     .flatMap((m) => m.selections.map((s) => s.updated_at))
     .sort()
     .at(-1);
-  const visibleMarkets = match.markets.filter((mk) => {
+  const visibleMarkets: typeof match.markets = match.markets.filter((mk) => {
     const def = MARKET_BY_KEY.get(mk.key);
     if (tab === "all") return true;
     if (tab === "popular") return def ? !!def.popular || mk.key === "1x2" : true;
