@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Radio, X } from "lucide-react";
 
+import { LiveBetsFeed } from "@/components/sports/LiveBetsFeed";
 import { MatchList } from "@/components/sports/MatchList";
 
 type HomeSearch = { q?: string };
@@ -79,6 +80,8 @@ function Home() {
         <h2 className="font-display text-xl font-bold uppercase">{q ? "Matches" : "Upcoming"}</h2>
         <MatchList filter={q ? "all" : "upcoming"} search={q} emptyText={q ? "No matches match your search." : undefined} />
       </section>
+
+      {!q && <LiveBetsFeed />}
     </div>
   );
 }
