@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { CATEGORY_TABS, MARKET_BY_KEY } from "@/lib/markets";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { ChevronLeft, Lock } from "lucide-react";
@@ -23,9 +25,12 @@ export const Route = createFileRoute("/match/$id")({
   component: MatchPage,
 });
 
+type TabId = (typeof CATEGORY_TABS)[number]["id"];
+
 function MatchPage() {
   const { id } = Route.useParams();
   const { data: match, isLoading, dataUpdatedAt } = useQuery(matchQuery(id));
+  const [tab, setTab] = useState<TabId>("popular");
 
   if (isLoading) return <Skeleton className="h-64 w-full" />;
   if (!match)
