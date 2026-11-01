@@ -49,6 +49,12 @@ function MatchPage() {
     .flatMap((m) => m.selections.map((s) => s.updated_at))
     .sort()
     .at(-1);
+  const visibleMarkets = match.markets.filter((mk) => {
+    const def = MARKET_BY_KEY.get(mk.key);
+    if (tab === "all") return true;
+    if (tab === "popular") return def ? !!def.popular || mk.key === "1x2" : true;
+    return def?.category === tab;
+  });
 
   return (
     <div className="space-y-4">
@@ -66,9 +72,9 @@ function MatchPage() {
             {live ? <LiveBadge minute={match.minute} /> : <StatusBadge status={match.status} />}
           </div>
         </div>
-        <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 py-8">
-          <div className="flex flex-col items-end gap-2"><TeamCrest src={match.home_crest} name={match.home_team} size={48} /><p className="text-right font-display text-xl font-bold uppercase sm:text-3xl">{match.home_team}</p></div>
-          <div className="text-center">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 px-3 py-6 sm:gap-4 sm:px-4 sm:py-8">
+          <div className="flex flex-col items-end gap-2"><TeamCrest src={match.home_crest} name={match.home_team} size={48} /><p className="w-full break-words text-right font-display text-base font-bold uppercase leading-tight sm:text-3xl">{match.home_team}</p></div>
+          <div className="shrink-0 text-center">
             {live || match.status === "finished" ? (
               <p className="font-mono text-4xl font-bold text-primary tabular">
                 {match.home_score}–{match.away_score}
@@ -85,7 +91,7 @@ function MatchPage() {
               </p>
             )}
           </div>
-          <div className="flex flex-col items-start gap-2"><TeamCrest src={match.away_crest} name={match.away_team} size={48} /><p className="font-display text-xl font-bold uppercase sm:text-3xl">{match.away_team}</p></div>
+          <div className="flex flex-col items-start gap-2"><TeamCrest src={match.away_crest} name={match.away_team} size={48} /><p className="w-full break-words font-display text-base font-bold uppercase leading-tight sm:text-3xl">{match.away_team}</p></div>
         </div>
         <div className="border-t border-border px-4 py-2 text-[11px] text-muted-foreground">
           Kick-off {format(new Date(match.kickoff_at), "EEE d MMM yyyy, HH:mm")}
