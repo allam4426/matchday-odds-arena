@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { format } from "date-fns";
+import { format, isToday, isTomorrow } from "date-fns";
 import { DatabaseZap, RefreshCw } from "lucide-react";
 
 import { MatchCard, ProvenanceBadge } from "@/components/sports/MatchCard";
@@ -9,6 +9,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { MARKET_TABS, matchesQuery, type Match, type MatchFilter } from "@/lib/sportsbook";
 import { useSettings } from "@/lib/settings";
 import { cn } from "@/lib/utils";
+
+type Day = "today" | "tomorrow" | "all";
+const PAGE = 25;
 
 export function MatchList({
   filter,
@@ -22,29 +25,87 @@ export function MatchList({
   emptyText?: string;
 }) {
   const [marketKey, setMarketKey] = useState<string>("1x2");
+  const [dayChoice, setDayChoice] = useState<Day | null>(null);
+  const [limit, setLimit] = useState(PAGE);
   const { data, isLoading, isError, refetch, dataUpdatedAt, isFetching } = useQuery(matchesQuery(filter, competitionId));
   const settings = useSettings();
+  const showDays = filter !== "live" && !search;
 
-  const groups = useMemo(() => {
+  const filtered = useMemo(() => {
     const q = search?.trim().toLowerCase();
-    const list = (data ?? []).filter(
+    return (data ?? []).filter(
       (m) =>
         !q ||
         m.home_team.toLowerCase().includes(q) ||
         m.away_team.toLowerCase().includes(q) ||
         m.competition.name.toLowerCase().includes(q),
     );
+  }, [data, search]);
+
+  const dayCounts = useMemo(() => {
+    let today = 0;
+    let tomorrow = 0;
+    for (const m of filtered) {
+      const d = new Date(m.kickoff_at);
+      if (m.status === "live" || isToday(d)) today++;
+      else if (isTomorrow(d)) tomorrow++;
+    }
+    return { today, tomorrow, all: filtered.length };
+  }, [filtered]);
+
+  // Default to today's matches; fall back to tomorrow, then everything.
+  const day: Day = !showDays
+    ? "all"
+    : dayChoice ?? (dayCounts.today > 0 ? "today" : dayCounts.tomorrow > 0 ? "tomorrow" : "all");
+
+  const { groups, total } = useMemo(() => {
+    const list = filtered.filter((m) => {
+      if (day === "all") return true;
+      const d = new Date(m.kickoff_at);
+      return day === "today" ? m.status === "live" || isToday(d) : isTomorrow(d);
+    });
+    const shown = list.slice(0, limit);
     const map = new Map<string, { comp: Match["competition"]; matches: Match[] }>();
-    for (const m of list) {
+    for (const m of shown) {
       const g = map.get(m.competition.id) ?? { comp: m.competition, matches: [] };
       g.matches.push(m);
       map.set(m.competition.id, g);
     }
-    return [...map.values()].sort((a, b) => a.comp.sort_order - b.comp.sort_order);
-  }, [data, search]);
+    return { groups: [...map.values()].sort((a, b) => a.comp.sort_order - b.comp.sort_order), total: list.length };
+  }, [filtered, day, limit]);
 
   return (
     <div className="space-y-3">
+      {showDays && (
+        <div className="flex gap-1.5" role="tablist" aria-label="Day">
+          {(
+            [
+              ["today", "Today"],
+              ["tomorrow", "Tomorrow"],
+              ["all", "All"],
+            ] as const
+          ).map(([k, label]) => (
+            <button
+              key={k}
+              role="tab"
+              aria-selected={day === k}
+              onClick={() => {
+                setDayChoice(k);
+                setLimit(PAGE);
+              }}
+              className={cn(
+                "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-bold transition-colors",
+                day === k ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {label}
+              <span className={cn("text-[11px] font-semibold", day === k ? "text-primary-foreground/70" : "text-muted-foreground")}>
+                {dayCounts[k]}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex gap-1 overflow-x-auto scrollbar-none" role="tablist" aria-label="Market type">
           {MARKET_TABS.map((t) => (
