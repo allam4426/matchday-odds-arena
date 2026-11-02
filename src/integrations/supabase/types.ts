@@ -858,6 +858,10 @@ export type Database = {
         Returns: number
       }
       _settle_bet: { Args: { _bet: string }; Returns: undefined }
+      admin_add_staff_by_email: {
+        Args: { _email: string; _role: Database["public"]["Enums"]["app_role"] }
+        Returns: string
+      }
       admin_approve_user: {
         Args: { _approve: boolean; _user: string }
         Returns: undefined
@@ -875,6 +879,16 @@ export type Database = {
         Returns: string
       }
       admin_exists: { Args: never; Returns: boolean }
+      admin_list_staff: {
+        Args: never
+        Returns: {
+          email: string
+          full_name: string
+          roles: Database["public"]["Enums"]["app_role"][]
+          user_id: string
+          username: string
+        }[]
+      }
       admin_review_deposit: {
         Args: { _decision: string; _id: string; _note: string }
         Returns: undefined
