@@ -57,6 +57,13 @@
       "when": 1793491705660,
       "tag": "0007_restrict_system_settings",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793585740663,
+      "tag": "0008_staff_management",
+      "breakpoints": true
     }
   ]
 }

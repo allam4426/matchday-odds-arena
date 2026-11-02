@@ -13,4 +13,4 @@
 - [x] Staff login page + admin bank settings page
 - [ ] (Blocked: needs sports-data API key from user) Real fixtures, automatic live scores and odds
 - [x] Speed: light match lists (main bet types only), Today/Tomorrow/All filters, "Show more" paging, batched live refreshes
-- [ ] Staff login by category
+- [x] Staff login by category + super-admin Staff page

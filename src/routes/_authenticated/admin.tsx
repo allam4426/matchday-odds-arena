@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { parseRpcError } from "@/lib/betting";
+import { navFor, ROLE_LABEL } from "@/lib/staff";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -23,14 +24,6 @@ export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminLayout,
 });
 
-const NAV = [
-  { to: "/admin", label: "Overview", exact: true },
-  { to: "/admin/matches", label: "Matches & Odds" },
-  { to: "/admin/deposits", label: "Deposits" },
-  { to: "/admin/withdrawals", label: "Withdrawals" },
-  { to: "/admin/users", label: "Registrations" },
-  { to: "/admin/settings", label: "Bank settings" },
-] as const;
 
 function AdminLayout() {
   const { isStaff, roles, user } = useAuth();
@@ -86,18 +79,18 @@ function AdminLayout() {
       <div className="border-b border-border bg-surface">
         <div className="flex items-center gap-3 overflow-x-auto px-4 scrollbar-none">
           <span className="shrink-0 py-3 text-xs font-bold uppercase tracking-widest text-primary">Back office</span>
-          {NAV.map((n) => (
+          {navFor(roles).map((n) => (
             <Link
               key={n.to}
               to={n.to}
-              activeOptions={{ exact: "exact" in n }}
+              activeOptions={{ exact: !!n.exact }}
               className="shrink-0 border-b-2 border-transparent px-2 py-3 text-sm font-semibold text-muted-foreground hover:text-foreground"
               activeProps={{ className: "border-primary text-foreground" }}
             >
               {n.label}
             </Link>
           ))}
-          <span className="ml-auto shrink-0 text-[11px] text-muted-foreground">{roles.join(", ").replace(/_/g, " ")}</span>
+          <span className="ml-auto shrink-0 text-[11px] text-muted-foreground">{roles.map((r) => ROLE_LABEL[r]).join(", ")}</span>
         </div>
       </div>
       <div className="mx-auto max-w-7xl px-4 py-6">
