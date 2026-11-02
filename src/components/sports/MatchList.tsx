@@ -169,30 +169,40 @@ export function MatchList({
           )}
         </div>
       ) : (
-        groups.map(({ comp, matches }) => (
-          <section key={comp.id} className="overflow-hidden rounded-lg border border-border bg-card">
-            <header className="flex items-center justify-between border-b border-border bg-surface px-4 py-2">
-              <Link
-                to="/competition/$id"
-                params={{ id: comp.id }}
-                className="flex items-center gap-2 text-sm font-semibold hover:text-primary"
-              >
-                <span className="text-[11px] uppercase tracking-wide text-muted-foreground">{comp.country}</span>
-                <span>{comp.name}</span>
-              </Link>
-              <div className="hidden w-[300px] gap-1.5 pr-14 text-center text-[11px] font-semibold uppercase text-muted-foreground md:flex">
-                {(matches[0].markets.find((m) => m.key === marketKey) ?? matches[0].markets[0])?.selections.map((s) => (
-                  <span key={s.id} className="flex-1">
-                    {s.label}
-                  </span>
-                ))}
-              </div>
-            </header>
-            {matches.map((m) => (
-              <MatchCard key={m.id} match={m} marketKey={marketKey} />
-            ))}
-          </section>
-        ))
+        <>
+          {groups.map(({ comp, matches }) => (
+            <section key={comp.id} className="overflow-hidden rounded-lg border border-border bg-card">
+              <header className="flex items-center justify-between border-b border-border bg-surface px-4 py-2">
+                <Link
+                  to="/competition/$id"
+                  params={{ id: comp.id }}
+                  className="flex items-center gap-2 text-sm font-semibold hover:text-primary"
+                >
+                  <span className="text-[11px] uppercase tracking-wide text-muted-foreground">{comp.country}</span>
+                  <span>{comp.name}</span>
+                </Link>
+                <div className="hidden w-[300px] gap-1.5 pr-14 text-center text-[11px] font-semibold uppercase text-muted-foreground md:flex">
+                  {(matches[0].markets.find((m) => m.key === marketKey) ?? matches[0].markets[0])?.selections.map((s) => (
+                    <span key={s.id} className="flex-1">
+                      {s.label}
+                    </span>
+                  ))}
+                </div>
+              </header>
+              {matches.map((m) => (
+                <MatchCard key={m.id} match={m} marketKey={marketKey} />
+              ))}
+            </section>
+          ))}
+          {total > limit && (
+            <button
+              onClick={() => setLimit((l) => l + PAGE)}
+              className="w-full rounded-lg border border-border bg-card py-3 text-sm font-semibold text-primary hover:bg-secondary"
+            >
+              Show more matches ({total - limit} more)
+            </button>
+          )}
+        </>
       )}
     </div>
   );
