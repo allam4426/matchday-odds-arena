@@ -77,13 +77,20 @@ function normalize(raw: unknown): Match {
 
 export type MatchFilter = "all" | "live" | "upcoming";
 
+/** Lists only need the market-tab markets; the match page loads the full suite. */
+const LIST_MARKET_KEYS = ["1x2", "dc", "ou25", "btts"];
+
 export function matchesQuery(filter: MatchFilter, competitionId?: string) {
   return queryOptions({
     queryKey: ["matches", filter, competitionId ?? null],
     queryFn: async () => {
       // Hide stale prematch events (kick-off passed but never set live) from default listings.
       const staleCutoff = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
-      let q = supabase.from("matches").select(MATCH_SELECT).eq("is_hidden", false);
+      let q = supabase
+        .from("matches")
+        .select(MATCH_SELECT)
+        .eq("is_hidden", false)
+        .in("markets.key", LIST_MARKET_KEYS);
       if (filter === "live") q = q.eq("status", "live");
       else if (filter === "upcoming") q = q.eq("status", "scheduled").gt("kickoff_at", new Date().toISOString());
       else q = q.in("status", ["scheduled", "live"]).gt("kickoff_at", staleCutoff);

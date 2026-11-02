@@ -18,7 +18,7 @@ export function RealtimeSync() {
         queryClient.invalidateQueries({ queryKey: ["matches"] });
         queryClient.invalidateQueries({ queryKey: ["match"] });
         queryClient.invalidateQueries({ queryKey: ["odds"] });
-      }, 400);
+      }, 3000); // batch bursts of odds updates into one refresh
     };
     const channel = supabase
       .channel(`sportsbook-${Math.random().toString(36).slice(2)}`)
