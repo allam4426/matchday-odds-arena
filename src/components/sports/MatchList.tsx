@@ -7,7 +7,6 @@ import { DatabaseZap, RefreshCw } from "lucide-react";
 import { MatchCard, ProvenanceBadge } from "@/components/sports/MatchCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MARKET_TABS, matchesQuery, type Match, type MatchFilter } from "@/lib/sportsbook";
-import { useSettings } from "@/lib/settings";
 import { cn } from "@/lib/utils";
 
 type Day = "today" | "tomorrow" | "all";
@@ -28,7 +27,6 @@ export function MatchList({
   const [dayChoice, setDayChoice] = useState<Day | null>(null);
   const [limit, setLimit] = useState(PAGE);
   const { data, isLoading, isError, refetch, dataUpdatedAt, isFetching } = useQuery(matchesQuery(filter, competitionId));
-  const settings = useSettings();
   const showDays = filter !== "live" && !search;
 
   const filtered = useMemo(() => {
@@ -135,7 +133,7 @@ export function MatchList({
         </button>
       </div>
 
-      {settings.sports_data_provider.status !== "connected" && (
+      {(data ?? []).some((m) => m.provenance !== "provider") && (
         <div className="flex items-start gap-2 rounded-md border border-border bg-surface px-3 py-2 text-xs text-muted-foreground">
           <DatabaseZap className="mt-0.5 h-3.5 w-3.5 shrink-0 text-warning" />
           <span>
