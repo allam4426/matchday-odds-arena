@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Link } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
 import { format, isToday, isTomorrow } from "date-fns";
@@ -50,15 +51,14 @@ export function ProvenanceBadge({ provenance }: { provenance: Match["provenance"
   );
 }
 
-export function MatchCard({ match, marketKey }: { match: Match; marketKey: string }) {
+export const MatchCard = memo(function MatchCard({ match, marketKey }: { match: Match; marketKey: string }) {
   const live = match.status === "live";
   const ko = kickoffLabel(match.kickoff_at);
   const primary = match.markets.find((m) => m.key === marketKey) ?? match.markets[0];
-  const others = match.markets.filter((m) => m.id !== primary?.id);
 
   return (
-    <div className="border-b border-border px-3 py-3 last:border-b-0 hover:bg-surface/60 sm:px-4">
-      <div className="flex flex-col gap-3 md:flex-row md:items-center">
+    <div className="border-b border-border px-3 py-3 last:border-b-0 hover:bg-surface/60 sm:px-4 [content-visibility:auto] [contain-intrinsic-size:auto_120px]">
+      <div className="flex flex-col gap-2.5 md:flex-row md:items-center md:gap-3">
         <Link
           to="/match/$id"
           params={{ id: match.id }}
@@ -86,8 +86,8 @@ export function MatchCard({ match, marketKey }: { match: Match; marketKey: strin
           </div>
         </Link>
 
-        {/* Desktop: the selected market tab */}
-        <div className="hidden items-center gap-1.5 md:flex md:w-[300px]">
+        {/* Selected market tab only — the full suite lives on the match page */}
+        <div className="flex items-center gap-1.5 md:w-[300px]">
           {primary ? (
             primary.selections.map((s) => (
               <OddsButton key={s.id} match={match} market={primary} selection={s} />
@@ -95,20 +95,6 @@ export function MatchCard({ match, marketKey }: { match: Match; marketKey: strin
           ) : (
             <span className="text-xs text-muted-foreground">No markets</span>
           )}
-        </div>
-
-        {/* Mobile: horizontally scrollable markets */}
-        <div className="-mx-3 flex snap-x gap-3 overflow-x-auto px-3 scrollbar-none md:hidden">
-          {[primary, ...others].filter(Boolean).map((mk) => (
-            <div key={mk!.id} className="w-[85%] shrink-0 snap-start">
-              <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{mk!.name}</p>
-              <div className="flex gap-1.5">
-                {mk!.selections.map((s) => (
-                  <OddsButton key={s.id} match={match} market={mk!} selection={s} />
-                ))}
-              </div>
-            </div>
-          ))}
         </div>
 
         <Link
@@ -119,11 +105,11 @@ export function MatchCard({ match, marketKey }: { match: Match; marketKey: strin
           )}
           aria-label={`All markets for ${match.home_team} v ${match.away_team}`}
         >
-          +{others.length}
+          More
           <ChevronRight className="h-3.5 w-3.5" />
         </Link>
       </div>
-      <div className="mt-1 flex items-center gap-2 pl-[76px] md:hidden">
+      <div className="mt-1.5 flex items-center gap-2 pl-[76px] md:hidden">
         <ProvenanceBadge provenance={match.provenance} />
         <Link to="/match/$id" params={{ id: match.id }} className="text-[11px] font-semibold text-primary">
           All markets
@@ -131,4 +117,4 @@ export function MatchCard({ match, marketKey }: { match: Match; marketKey: strin
       </div>
     </div>
   );
-}
+});
