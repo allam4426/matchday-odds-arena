@@ -292,6 +292,11 @@ export function BetSlip({ onClose }: { onClose?: () => void }) {
                   <span className="text-muted-foreground">{slip.items.length}-fold combo odds</span>
                   <span className="font-mono text-base font-bold text-primary">{formatOdds(comboOdds)}</span>
                 </div>
+                {comboCapped && (
+                  <p className="text-[11px] text-warning">
+                    Combo odds are capped at {formatOdds(comboOdds)} (full odds {formatOdds(rawComboOdds)}).
+                  </p>
+                )}
                 <Input
                   inputMode="decimal"
                   placeholder="Combo stake"

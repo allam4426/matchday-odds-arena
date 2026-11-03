@@ -8,6 +8,12 @@ describe("bet maths", () => {
     expect(combinedOdds([1.55, 2.45, 1.85])).toBe(7.03);
   });
 
+  it("caps combo odds at 100.00", () => {
+    // 2.17 x 2.15 x 3.62 x 4.94 x 1.51 x 3.30 = 415.7x uncapped
+    expect(combinedOdds([2.17, 2.15, 3.62, 4.94, 1.51, 3.3], 100)).toBe(100);
+    expect(combinedOdds([1.55, 2.45, 1.85], 100)).toBe(7.03);
+  });
+
   it("floors the potential return in minor units", () => {
     // 1.15 * 100 is 114.99999999999999 in floating point; must still be 115
     expect(potentialReturnMinor(100, 1.15)).toBe(115);
