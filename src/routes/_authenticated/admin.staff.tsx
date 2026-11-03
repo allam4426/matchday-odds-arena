@@ -1,18 +1,21 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { UserPlus, X } from "lucide-react";
+import { KeyRound, UserPlus, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth, type AppRole } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { parseRpcError } from "@/lib/betting";
 import { ROLE_LABEL, STAFF_CATEGORIES } from "@/lib/staff";
+import { createStaffAccount, setStaffPassword } from "@/lib/staff.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/staff")({
   head: () => ({
@@ -29,11 +32,33 @@ export const Route = createFileRoute("/_authenticated/admin/staff")({
   component: StaffPage,
 });
 
+function CategorySelect({ value, onChange }: { value: AppRole; onChange: (r: AppRole) => void }) {
+  return (
+    <Select value={value} onValueChange={(v) => onChange(v as AppRole)}>
+      <SelectTrigger aria-label="Category">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {STAFF_CATEGORIES.map((c) => (
+          <SelectItem key={c.role} value={c.role}>
+            {c.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
 function StaffPage() {
   const { can, roles, user } = useAuth();
   const qc = useQueryClient();
+  const [mode, setMode] = useState<"new" | "existing">("new");
   const [email, setEmail] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [password, setPassword] = useState("");
   const [role, setRole] = useState<AppRole>("finance_admin");
+  const [pwFor, setPwFor] = useState<{ id: string; email: string | null } | null>(null);
+  const [newPw, setNewPw] = useState("");
   const isSuper = roles.includes("super_admin");
 
   const staff = useQuery({
@@ -46,15 +71,37 @@ function StaffPage() {
     },
   });
 
+  const refresh = () => qc.invalidateQueries({ queryKey: ["admin", "staff"] });
+
   const add = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.rpc("admin_add_staff_by_email", { _email: email, _role: role });
-      if (error) throw error;
+      if (mode === "new") {
+        await createStaffAccount({ data: { email, password, fullName, role } });
+      } else {
+        const { error } = await supabase.rpc("admin_add_staff_by_email", { _email: email, _role: role });
+        if (error) throw error;
+      }
     },
     onSuccess: () => {
-      toast.success(`Added as ${ROLE_LABEL[role]}`);
+      toast.success(
+        mode === "new" ? `Staff login created. They can sign in now as ${ROLE_LABEL[role]}.` : `Added as ${ROLE_LABEL[role]}`,
+      );
       setEmail("");
-      qc.invalidateQueries({ queryKey: ["admin", "staff"] });
+      setFullName("");
+      setPassword("");
+      refresh();
+    },
+    onError: (e) => toast.error(parseRpcError(e).message),
+  });
+
+  const changePw = useMutation({
+    mutationFn: async () => {
+      await setStaffPassword({ data: { userId: pwFor!.id, password: newPw } });
+    },
+    onSuccess: () => {
+      toast.success("Password updated");
+      setPwFor(null);
+      setNewPw("");
     },
     onError: (e) => toast.error(parseRpcError(e).message),
   });
@@ -66,7 +113,7 @@ function StaffPage() {
     },
     onSuccess: () => {
       toast.success("Role removed");
-      qc.invalidateQueries({ queryKey: ["admin", "staff"] });
+      refresh();
       qc.invalidateQueries({ queryKey: ["roles"] });
     },
     onError: (e) => toast.error(parseRpcError(e).message),
@@ -81,38 +128,58 @@ function StaffPage() {
       <div>
         <h1 className="font-display text-2xl font-black uppercase">Staff</h1>
         <p className="text-sm text-muted-foreground">
-          Each category signs in on the staff login page and only sees its own sections.
+          Each category signs in on the staff login page with email and password, and only sees its own sections.
         </p>
       </div>
 
       <form
         onSubmit={(e) => {
           e.preventDefault();
+          if (mode === "new" && password.length < 8) return toast.error("Password must be at least 8 characters.");
           add.mutate();
         }}
-        className="grid gap-3 rounded-lg border border-border bg-card p-4 sm:grid-cols-[1fr_200px_auto] sm:items-end"
+        className="space-y-3 rounded-lg border border-border bg-card p-4"
       >
-        <div className="space-y-1.5">
-          <Label htmlFor="staff-email">Registered email</Label>
-          <Input id="staff-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@example.com" />
-        </div>
-        <div className="space-y-1.5">
-          <Label>Category</Label>
-          <Select value={role} onValueChange={(v) => setRole(v as AppRole)}>
-            <SelectTrigger aria-label="Category">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {STAFF_CATEGORIES.map((c) => (
-                <SelectItem key={c.role} value={c.role}>
-                  {c.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <Tabs value={mode} onValueChange={(v) => setMode(v as "new" | "existing")}>
+          <TabsList className="grid w-full grid-cols-2 sm:w-96">
+            <TabsTrigger value="new">New staff login</TabsTrigger>
+            <TabsTrigger value="existing">Existing account</TabsTrigger>
+          </TabsList>
+        </Tabs>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {mode === "new" && (
+            <div className="space-y-1.5">
+              <Label htmlFor="staff-name">Full name</Label>
+              <Input id="staff-name" required minLength={2} maxLength={80} value={fullName} onChange={(e) => setFullName(e.target.value)} />
+            </div>
+          )}
+          <div className="space-y-1.5">
+            <Label htmlFor="staff-email">{mode === "new" ? "Email (used to sign in)" : "Registered email"}</Label>
+            <Input id="staff-email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@example.com" />
+          </div>
+          {mode === "new" && (
+            <div className="space-y-1.5">
+              <Label htmlFor="staff-password">Password</Label>
+              <Input
+                id="staff-password"
+                type="text"
+                autoComplete="new-password"
+                required
+                minLength={8}
+                maxLength={72}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="At least 8 characters"
+              />
+            </div>
+          )}
+          <div className="space-y-1.5">
+            <Label>Category</Label>
+            <CategorySelect value={role} onChange={setRole} />
+          </div>
         </div>
         <Button type="submit" disabled={add.isPending} className="gap-1.5 font-bold">
-          <UserPlus className="h-4 w-4" /> Add staff
+          <UserPlus className="h-4 w-4" /> {mode === "new" ? "Create staff login" : "Add staff"}
         </Button>
       </form>
 
@@ -134,7 +201,7 @@ function StaffPage() {
                   </p>
                   <p className="truncate text-xs text-muted-foreground">{s.email}</p>
                 </div>
-                <div className="flex flex-wrap gap-1.5">
+                <div className="flex flex-wrap items-center gap-1.5">
                   {(s.roles ?? []).map((r) => (
                     <span key={r} className="inline-flex items-center gap-1 rounded-full bg-primary/15 px-2.5 py-1 text-xs font-semibold text-primary">
                       {ROLE_LABEL[r]}
@@ -151,12 +218,46 @@ function StaffPage() {
                       </button>
                     </span>
                   ))}
+                  <Button size="sm" variant="outline" className="h-7 gap-1 text-xs" onClick={() => setPwFor({ id: s.user_id, email: s.email })}>
+                    <KeyRound className="h-3 w-3" /> Set password
+                  </Button>
                 </div>
               </li>
             ))}
           </ul>
         )}
       </div>
+
+      <Dialog open={!!pwFor} onOpenChange={(o) => !o && (setPwFor(null), setNewPw(""))}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Set password</DialogTitle>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (newPw.length < 8) return toast.error("Password must be at least 8 characters.");
+              changePw.mutate();
+            }}
+            className="space-y-3"
+          >
+            <p className="text-sm text-muted-foreground">New password for {pwFor?.email}</p>
+            <Input
+              type="text"
+              autoComplete="new-password"
+              aria-label="New password"
+              value={newPw}
+              minLength={8}
+              maxLength={72}
+              onChange={(e) => setNewPw(e.target.value)}
+              placeholder="At least 8 characters"
+            />
+            <Button type="submit" className="w-full font-bold" disabled={changePw.isPending}>
+              Save password
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
