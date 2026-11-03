@@ -338,6 +338,10 @@ function Withdraw() {
   const { data: w } = useWalletSummary();
   const [f, setF] = useState({ amount: "", bank_name: "", account_name: "", account_number: "" });
   const [busy, setBusy] = useState(false);
+  const [method, setMethod] = useState<string | null>(null);
+  const cryptoWallets = visibleCryptoWallets(settings);
+  const cryptoWallet = cryptoWallets.find((c) => c.id === method) ?? null;
+  const available = w?.available_minor ?? 0;
 
   const { data: list } = useQuery({
     queryKey: ["wallet", "withdrawals", user?.id],
@@ -349,11 +353,28 @@ function Withdraw() {
     },
   });
 
+  // Crypto withdrawals are only for customers with an approved crypto deposit.
+  const { data: cryptoEligible = false } = useQuery({
+    queryKey: ["wallet", "crypto-eligible", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from("deposits")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user!.id)
+        .eq("method", "crypto")
+        .eq("status", "approved");
+      if (error) throw error;
+      return (count ?? 0) > 0;
+    },
+  });
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     const minor = parseMoneyToMinor(f.amount);
+    if (!f.bank_name) return toast.error("Choose your bank.");
     if (!minor) return toast.error("Enter a valid amount.");
-    if (minor > (w?.available_minor ?? 0)) return toast.error("Amount exceeds your available balance.");
+    if (minor > available) return toast.error("Amount exceeds your available balance.");
     setBusy(true);
     const { error } = await supabase.rpc("request_withdrawal", {
       _amount_minor: minor,
@@ -365,6 +386,7 @@ function Withdraw() {
     if (error) return toast.error("Withdrawal not requested", { description: parseRpcError(error).message });
     toast.success("Withdrawal requested", { description: "The amount is reserved while we review your request." });
     setF({ ...f, amount: "" });
+    setMethod(null);
     queryClient.invalidateQueries({ queryKey: ["wallet"] });
   }
 
@@ -377,12 +399,73 @@ function Withdraw() {
 
   return (
     <div className="space-y-4">
+      {method === null ? (
+        <section className="space-y-2 rounded-lg border border-border bg-card p-4">
+          <div className="flex items-baseline justify-between">
+            <h2 className="text-sm font-semibold uppercase tracking-wide">Withdrawal methods</h2>
+            <p className="text-xs text-muted-foreground">
+              Available <span className="font-mono font-bold text-primary">{formatMoney(available, settings.currency)}</span>
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setMethod("bank")}
+            className="flex w-full items-center gap-3 rounded-lg border border-border bg-surface px-3 py-3 text-left transition hover:border-primary"
+          >
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/15 text-primary">
+              <Landmark className="h-4 w-4" />
+            </span>
+            <span className="flex-1">
+              <span className="block text-sm font-bold">Bank Transfer</span>
+              <span className="block text-[11px] text-muted-foreground">Bank of Maldives · Maldives Islamic Bank ({settings.currency})</span>
+            </span>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          </button>
+          {cryptoWallets.map((c) => (
+            <CoinRow
+              key={c.id}
+              wallet={c}
+              disabled={!cryptoEligible}
+              onClick={() => setMethod(c.id)}
+              hint={cryptoEligible ? `1 ${c.symbol} = ${formatMoney(c.mvr_rate * 100, settings.currency)}` : undefined}
+            />
+          ))}
+          {cryptoWallets.length > 0 && !cryptoEligible && (
+            <p className="flex items-start gap-2 rounded-md bg-surface p-2.5 text-[11px] text-muted-foreground">
+              <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              Crypto withdrawal opens after you make an approved crypto deposit. Bank deposits can be withdrawn by bank transfer only.
+            </p>
+          )}
+        </section>
+      ) : cryptoWallet ? (
+        <CryptoWithdrawForm wallet={cryptoWallet} availableMinor={available} onBack={() => setMethod(null)} />
+      ) : (
       <form onSubmit={submit} className="grid gap-3 rounded-lg border border-border bg-card p-4 md:grid-cols-2">
-        <div className="md:col-span-2 flex items-baseline justify-between">
-          <h2 className="font-semibold">Request a bank withdrawal</h2>
+        <div className="md:col-span-2 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Button type="button" variant="ghost" size="icon" className="h-8 w-8" onClick={() => setMethod(null)} aria-label="Back">
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <h2 className="font-semibold">Bank Transfer</h2>
+          </div>
           <p className="text-xs text-muted-foreground">
-            Available <span className="font-mono font-bold text-primary">{formatMoney(w?.available_minor ?? 0, settings.currency)}</span>
+            Available <span className="font-mono font-bold text-primary">{formatMoney(available, settings.currency)}</span>
           </p>
+        </div>
+        <div className="space-y-1.5">
+          <Label>Bank</Label>
+          <Select value={f.bank_name} onValueChange={(v) => setF({ ...f, bank_name: v })}>
+            <SelectTrigger aria-label="Bank">
+              <SelectValue placeholder="Choose your bank" />
+            </SelectTrigger>
+            <SelectContent>
+              {BANK_PRESETS.map((b) => (
+                <SelectItem key={b} value={b}>
+                  {b}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="wd-amount">Amount ({settings.currency})</Label>
@@ -393,10 +476,6 @@ function Withdraw() {
           </p>
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="wd-bank">Bank name</Label>
-          <Input id="wd-bank" value={f.bank_name} onChange={(e) => setF({ ...f, bank_name: e.target.value })} />
-        </div>
-        <div className="space-y-1.5">
           <Label htmlFor="wd-name">Account holder name</Label>
           <Input id="wd-name" value={f.account_name} onChange={(e) => setF({ ...f, account_name: e.target.value })} />
           <p className="text-[11px] text-muted-foreground">Must match the name on your account.</p>
@@ -405,12 +484,16 @@ function Withdraw() {
           <Label htmlFor="wd-num">Account number</Label>
           <Input id="wd-num" inputMode="numeric" value={f.account_number} onChange={(e) => setF({ ...f, account_number: e.target.value })} />
         </div>
+        <p className="md:col-span-2 flex items-center gap-2 rounded-md bg-warning/15 p-2.5 text-xs font-semibold text-warning">
+          <AlertTriangle className="h-3.5 w-3.5 shrink-0" /> You can withdraw {settings.max_withdrawals_per_day ?? 2} times per day.
+        </p>
         <div className="md:col-span-2">
           <Button type="submit" className="w-full font-bold uppercase md:w-auto" disabled={busy}>
-            {busy ? "Requesting…" : "Request withdrawal"}
+            {busy ? "Requesting…" : "Start process"}
           </Button>
         </div>
       </form>
+      )}
 
       <section className="rounded-lg border border-border bg-card">
         <h2 className="border-b border-border px-4 py-2 text-sm font-semibold">Withdrawal requests</h2>
@@ -421,7 +504,14 @@ function Withdraw() {
             {list!.map((r) => (
               <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm">
                 <div>
-                  <p className="font-mono font-semibold">{formatMoney(r.amount_minor, settings.currency)}</p>
+                  <p className="font-mono font-semibold">
+                    {formatMoney(r.amount_minor, settings.currency)}
+                    {r.method === "crypto" && (
+                      <span className="ml-1.5 text-xs font-normal text-muted-foreground">
+                        ≈ {Number(r.crypto_amount)} {r.crypto_symbol}
+                      </span>
+                    )}
+                  </p>
                   <p className="text-xs text-muted-foreground">
                     {r.reference} · {r.bank_name} {maskAccount(r.account_number)} · {format(new Date(r.created_at), "d MMM, HH:mm")}
                   </p>
