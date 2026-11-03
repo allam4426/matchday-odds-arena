@@ -34,6 +34,7 @@ export type AppSettings = {
   max_stake_minor: number;
   max_payout_minor: number;
   max_combo_selections: number;
+  max_combo_odds: number;
   restricted_countries: string[];
   bank_details: BankDetails;
   bank_accounts: BankAccount[];
@@ -51,6 +52,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   max_stake_minor: 100_000,
   max_payout_minor: 5_000_000,
   max_combo_selections: 12,
+  max_combo_odds: 100,
   restricted_countries: [],
   bank_details: { bank_name: "", account_name: "", account_number: "", instructions: "" },
   bank_accounts: [],
