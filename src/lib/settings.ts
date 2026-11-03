@@ -68,6 +68,7 @@ export type AppSettings = {
   restricted_countries: string[];
   bank_details: BankDetails;
   bank_accounts: BankAccount[];
+  crypto_wallets: CryptoWallet[];
   sports_data_provider: ProviderInfo;
 };
 
@@ -86,6 +87,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   restricted_countries: [],
   bank_details: { bank_name: "", account_name: "", account_number: "", instructions: "" },
   bank_accounts: [],
+  crypto_wallets: [],
   sports_data_provider: { name: null, status: "not_configured", last_sync_at: null },
 };
 
