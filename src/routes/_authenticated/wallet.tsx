@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { format } from "date-fns";
-import { Copy, FileUp, Landmark } from "lucide-react";
+import { AlertTriangle, ChevronLeft, ChevronRight, Copy, FileUp, Landmark, Lock } from "lucide-react";
 import { toast } from "sonner";
 
 import { StatusBadge } from "@/components/status-badge";
@@ -15,7 +15,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { parseRpcError } from "@/lib/betting";
 import { formatMoney, maskAccount, parseMoneyToMinor } from "@/lib/money";
-import { useSettings, visibleBanks } from "@/lib/settings";
+import { BANK_PRESETS, minorToCrypto, useSettings, visibleBanks, visibleCryptoWallets } from "@/lib/settings";
+import { CoinRow, CryptoDeposit, CryptoWithdrawForm } from "@/components/wallet/CryptoPanels";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import bmlLogo from "@/assets/bml-logo.png.asset.json";
 import mibLogo from "@/assets/mib-logo.jpeg.asset.json";
 
@@ -140,6 +142,8 @@ function Deposit() {
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const banks = visibleBanks(settings);
+  const cryptoWallets = visibleCryptoWallets(settings);
+  const [method, setMethod] = useState<"bank" | "crypto">("bank");
   const [bankId, setBankId] = useState<string | null>(null);
   const bank = banks.find((b) => b.id === bankId) ?? null;
   const configured = !!bank;
@@ -199,6 +203,25 @@ function Deposit() {
 
   return (
     <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-1 rounded-lg border border-border bg-card p-1">
+        {(["bank", "crypto"] as const).map((m) => (
+          <button
+            key={m}
+            type="button"
+            onClick={() => setMethod(m)}
+            className={cn(
+              "rounded-md py-2 text-sm font-semibold",
+              method === m ? "bg-secondary text-foreground" : "text-muted-foreground",
+            )}
+          >
+            {m === "bank" ? "Bank Transfer" : "Cryptocurrency"}
+          </button>
+        ))}
+      </div>
+      {method === "crypto" ? (
+        <CryptoDeposit wallets={cryptoWallets} />
+      ) : (
+      <>
       <section className="rounded-lg border border-border bg-card p-4">
         <h2 className="text-sm font-semibold uppercase tracking-wide">Bank transfer</h2>
         {banks.length === 0 ? (
@@ -268,6 +291,8 @@ function Deposit() {
         </form>
       </div>
       )}
+      </>
+      )}
 
       <section className="rounded-lg border border-border bg-card">
         <h2 className="border-b border-border px-4 py-2 text-sm font-semibold">Deposit requests</h2>
@@ -278,7 +303,12 @@ function Deposit() {
             {deposits!.map((d) => (
               <li key={d.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm">
                 <div>
-                  <p className="font-mono font-semibold">{formatMoney(d.amount_minor, settings.currency)}</p>
+                  <p className="font-mono font-semibold">
+                    {d.method === "crypto" ? `${Number(d.crypto_amount)} ${d.crypto_symbol}` : formatMoney(d.amount_minor, settings.currency)}
+                    {d.method === "crypto" && (
+                      <span className="ml-1.5 text-xs font-normal text-muted-foreground">≈ {formatMoney(d.amount_minor, settings.currency)}</span>
+                    )}
+                  </p>
                   <p className="text-xs text-muted-foreground">
                     {d.reference} · {format(new Date(d.created_at), "d MMM, HH:mm")}
                   </p>

@@ -60,6 +60,7 @@ export type AppSettings = {
   max_deposit_minor: number;
   min_withdrawal_minor: number;
   max_withdrawal_minor: number;
+  max_withdrawals_per_day: number;
   min_stake_minor: number;
   max_stake_minor: number;
   max_payout_minor: number;
@@ -79,6 +80,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   max_deposit_minor: 1_000_000,
   min_withdrawal_minor: 2000,
   max_withdrawal_minor: 500_000,
+  max_withdrawals_per_day: 2,
   min_stake_minor: 100,
   max_stake_minor: 100_000,
   max_payout_minor: 5_000_000,
