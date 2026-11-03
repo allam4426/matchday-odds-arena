@@ -38,6 +38,7 @@ function MyBets() {
       let q = supabase
         .from("bets")
         .select("*, bet_selections(id, match_label, market_name, selection_label, odds_accepted, result, matches(status, home_score, away_score))")
+        .eq("user_id", user!.id)
         .order("placed_at", { ascending: false })
         .limit(100);
       q = tab === "open" ? q.eq("status", "open") : q.neq("status", "open");

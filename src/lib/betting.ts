@@ -7,10 +7,11 @@ function round2(n: number): number {
   return Math.round(Number((n * 100).toFixed(8))) / 100;
 }
 
-/** Combined odds of an accumulator, rounded to 2 decimals like the server. */
-export function combinedOdds(odds: number[]): number {
+/** Combined odds of an accumulator, rounded to 2 decimals and capped like the server. */
+export function combinedOdds(odds: number[], maxOdds?: number): number {
   if (odds.length === 0) return 0;
-  return round2(odds.reduce((acc, o) => acc * o, 1));
+  const total = round2(odds.reduce((acc, o) => acc * o, 1));
+  return maxOdds != null && maxOdds > 0 ? Math.min(total, maxOdds) : total;
 }
 
 /** Potential return (stake included) in minor units, floored and capped at the max payout. */

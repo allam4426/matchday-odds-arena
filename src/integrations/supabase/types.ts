@@ -206,8 +206,13 @@ export type Database = {
           amount_minor: number
           bank_reference: string
           created_at: string
+          crypto_amount: number | null
+          crypto_network: string | null
+          crypto_rate: number | null
+          crypto_symbol: string | null
           flagged_duplicate: boolean
           id: string
+          method: string
           reference: string
           review_note: string | null
           reviewed_at: string | null
@@ -221,8 +226,13 @@ export type Database = {
           amount_minor: number
           bank_reference: string
           created_at?: string
+          crypto_amount?: number | null
+          crypto_network?: string | null
+          crypto_rate?: number | null
+          crypto_symbol?: string | null
           flagged_duplicate?: boolean
           id?: string
+          method?: string
           reference?: string
           review_note?: string | null
           reviewed_at?: string | null
@@ -236,8 +246,13 @@ export type Database = {
           amount_minor?: number
           bank_reference?: string
           created_at?: string
+          crypto_amount?: number | null
+          crypto_network?: string | null
+          crypto_rate?: number | null
+          crypto_symbol?: string | null
           flagged_duplicate?: boolean
           id?: string
+          method?: string
           reference?: string
           review_note?: string | null
           reviewed_at?: string | null
@@ -748,7 +763,12 @@ export type Database = {
           amount_minor: number
           bank_name: string
           created_at: string
+          crypto_amount: number | null
+          crypto_network: string | null
+          crypto_rate: number | null
+          crypto_symbol: string | null
           id: string
+          method: string
           paid_at: string | null
           payment_reference: string | null
           reference: string
@@ -765,7 +785,12 @@ export type Database = {
           amount_minor: number
           bank_name: string
           created_at?: string
+          crypto_amount?: number | null
+          crypto_network?: string | null
+          crypto_rate?: number | null
+          crypto_symbol?: string | null
           id?: string
+          method?: string
           paid_at?: string | null
           payment_reference?: string | null
           reference?: string
@@ -782,7 +807,12 @@ export type Database = {
           amount_minor?: number
           bank_name?: string
           created_at?: string
+          crypto_amount?: number | null
+          crypto_network?: string | null
+          crypto_rate?: number | null
+          crypto_symbol?: string | null
           id?: string
+          method?: string
           paid_at?: string | null
           payment_reference?: string | null
           reference?: string
@@ -831,6 +861,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      _crypto_wallet: { Args: { _wallet_id: string }; Returns: Json }
       _notify: {
         Args: { _body: string; _kind: string; _title: string; _user: string }
         Returns: undefined
@@ -979,6 +1010,10 @@ export type Database = {
       }
       provider_set_crests: { Args: { _items: Json }; Returns: undefined }
       provider_sync: { Args: { _matches: Json }; Returns: Json }
+      request_crypto_withdrawal: {
+        Args: { _address: string; _amount_minor: number; _wallet_id: string }
+        Returns: string
+      }
       request_withdrawal: {
         Args: {
           _account_name: string
@@ -999,6 +1034,16 @@ export type Database = {
         Returns: undefined
       }
       setting_bigint: { Args: { _key: string }; Returns: number }
+      submit_crypto_deposit: {
+        Args: {
+          _crypto_amount: number
+          _note?: string
+          _slip_path: string
+          _txid: string
+          _wallet_id: string
+        }
+        Returns: string
+      }
       submit_deposit: {
         Args: {
           _amount_minor: number

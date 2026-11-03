@@ -54,6 +54,8 @@ export const createStaffAccount = createServerFn({ method: "POST" })
       _grant: true,
     });
     if (roleErr) throw new Error(roleErr.message);
+    // Accounts created by a super admin are pre-approved.
+    await supabaseAdmin.from("profiles").update({ approved: true }).eq("id", created.user.id);
     return { userId: created.user.id };
   });
 

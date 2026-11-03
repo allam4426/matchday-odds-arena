@@ -72,7 +72,9 @@ export function BetSlip({ onClose }: { onClose?: () => void }) {
   }, [slip.items]);
 
   const mode = slip.items.length < 2 ? "single" : slip.mode;
-  const comboOdds = combinedOdds(slip.items.map((i) => i.odds));
+  const rawComboOdds = combinedOdds(slip.items.map((i) => i.odds));
+  const comboOdds = combinedOdds(slip.items.map((i) => i.odds), Number(settings.max_combo_odds) || 100);
+  const comboCapped = rawComboOdds > comboOdds;
   const comboStakeMinor = parseMoneyToMinor(slip.comboStake) ?? 0;
 
   const singleTotals = slip.items.reduce(
@@ -290,6 +292,11 @@ export function BetSlip({ onClose }: { onClose?: () => void }) {
                   <span className="text-muted-foreground">{slip.items.length}-fold combo odds</span>
                   <span className="font-mono text-base font-bold text-primary">{formatOdds(comboOdds)}</span>
                 </div>
+                {comboCapped && (
+                  <p className="text-[11px] text-warning">
+                    Combo odds are capped at {formatOdds(comboOdds)} (full odds {formatOdds(rawComboOdds)}).
+                  </p>
+                )}
                 <Input
                   inputMode="decimal"
                   placeholder="Combo stake"
