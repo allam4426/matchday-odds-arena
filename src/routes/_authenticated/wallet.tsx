@@ -136,7 +136,6 @@ function Deposit() {
   const settings = useSettings();
   const queryClient = useQueryClient();
   const [amount, setAmount] = useState("");
-  const [ref, setRef] = useState("");
   const [note, setNote] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
@@ -149,7 +148,7 @@ function Deposit() {
     queryKey: ["wallet", "deposits", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data, error } = await supabase.from("deposits").select("*").order("created_at", { ascending: false }).limit(50);
+      const { data, error } = await supabase.from("deposits").select("*").eq("user_id", user!.id).order("created_at", { ascending: false }).limit(50);
       if (error) throw error;
       return data ?? [];
     },
@@ -163,7 +162,6 @@ function Deposit() {
       return toast.error(
         `Deposits must be between ${formatMoney(settings.min_deposit_minor, settings.currency)} and ${formatMoney(settings.max_deposit_minor, settings.currency)}.`,
       );
-    if (!ref.trim()) return toast.error("Enter the bank transfer reference.");
     if (!file) return toast.error("Upload your payment slip.");
     if (file.size > 10 * 1024 * 1024) return toast.error("The slip must be under 10 MB.");
     if (!/^(image\/(png|jpe?g|webp|heic)|application\/pdf)$/.test(file.type)) return toast.error("Upload an image or PDF.");
@@ -176,14 +174,13 @@ function Deposit() {
       if (up.error) throw up.error;
       const { error } = await supabase.rpc("submit_deposit", {
         _amount_minor: minor,
-        _bank_reference: ref.trim(),
+        _bank_reference: "",
         _slip_path: path,
         _note: `Paid to: ${bank!.bank_name} ${bank!.account_number}${note ? ` — ${note}` : ""}`,
       });
       if (error) throw error;
       toast.success("Deposit submitted", { description: "We'll credit your wallet once the transfer is verified." });
       setAmount("");
-      setRef("");
       setNote("");
       setFile(null);
       queryClient.invalidateQueries({ queryKey: ["wallet"] });
@@ -255,10 +252,6 @@ function Deposit() {
             </p>
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="dep-ref">Bank transfer reference</Label>
-            <Input id="dep-ref" value={ref} maxLength={100} onChange={(e) => setRef(e.target.value)} />
-          </div>
-          <div className="space-y-1.5">
             <Label htmlFor="dep-slip">Payment slip (image or PDF, max 10 MB)</Label>
             <Input id="dep-slip" type="file" accept="image/*,application/pdf" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
           </div>
@@ -287,7 +280,7 @@ function Deposit() {
                 <div>
                   <p className="font-mono font-semibold">{formatMoney(d.amount_minor, settings.currency)}</p>
                   <p className="text-xs text-muted-foreground">
-                    {d.reference} · Bank ref {d.bank_reference} · {format(new Date(d.created_at), "d MMM, HH:mm")}
+                    {d.reference} · {format(new Date(d.created_at), "d MMM, HH:mm")}
                   </p>
                   {d.status === "rejected" && d.review_note && <p className="text-xs text-destructive">Reason: {d.review_note}</p>}
                 </div>
@@ -320,7 +313,7 @@ function Withdraw() {
     queryKey: ["wallet", "withdrawals", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data, error } = await supabase.from("withdrawals").select("*").order("created_at", { ascending: false }).limit(50);
+      const { data, error } = await supabase.from("withdrawals").select("*").eq("user_id", user!.id).order("created_at", { ascending: false }).limit(50);
       if (error) throw error;
       return data ?? [];
     },
@@ -431,7 +424,7 @@ function History() {
     queryKey: ["wallet", "ledger", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data, error } = await supabase.from("ledger_entries").select("*").order("id", { ascending: false }).limit(200);
+      const { data, error } = await supabase.from("ledger_entries").select("*").eq("user_id", user!.id).order("id", { ascending: false }).limit(200);
       if (error) throw error;
       return data ?? [];
     },
