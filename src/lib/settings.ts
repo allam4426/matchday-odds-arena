@@ -23,6 +23,36 @@ export function visibleBanks(s: AppSettings): BankAccount[] {
 
 export type ProviderInfo = { name: string | null; status: string; last_sync_at: string | null };
 
+export type CryptoWallet = {
+  id: string;
+  name: string;
+  symbol: string;
+  network: string;
+  address: string;
+  min_amount: number;
+  /** MVR credited per 1 coin */
+  mvr_rate: number;
+  visible: boolean;
+};
+
+export const DEFAULT_MVR_RATE = 21;
+
+/** Crypto wallets customers can deposit to / withdraw with. */
+export function visibleCryptoWallets(s: AppSettings): CryptoWallet[] {
+  return (s.crypto_wallets ?? []).filter((w) => w.visible && w.address.trim() && Number(w.mvr_rate) > 0);
+}
+
+/** Convert MVR minor units to a coin amount at the wallet's rate (6 decimals). */
+export function minorToCrypto(minor: number, rate: number): number {
+  if (!rate || rate <= 0) return 0;
+  return Math.round((minor / 100 / rate) * 1e6) / 1e6;
+}
+
+/** Convert a coin amount to MVR minor units at the wallet's rate (rounded like the server). */
+export function cryptoToMinor(amount: number, rate: number): number {
+  return Math.round(amount * rate * 100);
+}
+
 export type AppSettings = {
   currency: string;
   real_money_enabled: boolean;
