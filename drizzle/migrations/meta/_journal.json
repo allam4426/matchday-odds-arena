@@ -71,6 +71,13 @@
       "when": 1793669782164,
       "tag": "0009_deposit_auto_ref_combo_cap",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793669917909,
+      "tag": "0010_crypto_wallets",
+      "breakpoints": true
     }
   ]
 }
