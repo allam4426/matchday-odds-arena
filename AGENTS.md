@@ -16,3 +16,4 @@
 - Staff roles live only in user_roles (super_admin, finance_admin, sports_trader, support_agent, auditor); finance and trading permissions are checked separately in each function.
 - Match rows carry a provenance (sample/manual/provider) shown to customers; never present sample or manual data as a live feed.
 - Back-office section visibility per staff role and staff-login categories are defined once in src/lib/staff.ts — UI only; every RPC still re-checks the role server-side.
+- Combo odds are reduced by the combo_total_odds DB function (threshold from system_settings.combo_reduce_from); src/lib/betting.ts combinedOdds mirrors it for display — change both together so the slip matches what the server pays.
