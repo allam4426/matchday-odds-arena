@@ -67,6 +67,27 @@ export async function syncLiveMatches() {
   const matches = data.matches.filter((m) => m.homeTeam.name && m.awayTeam.name);
 
   const db = await admin();
+
+  // Games still marked live (or never started) that dropped out of the date window would stay stuck forever:
+  // look a couple of them up individually each run (kept small for the API rate limit).
+  const fetchedRefs = new Set(matches.map((m) => `fd:${m.id}`));
+  const { data: stuck } = await db
+    .from("matches")
+    .select("provider_ref")
+    .not("provider_ref", "is", null)
+    .or(`status.eq.live,and(status.eq.scheduled,kickoff_at.lt.${new Date(now.getTime() - 3 * 3600000).toISOString()})`)
+    .gt("kickoff_at", new Date(now.getTime() - 7 * 86400000).toISOString())
+    .order("kickoff_at", { ascending: true })
+    .limit(20);
+  const lookups = (stuck ?? []).map((r) => r.provider_ref!).filter((r) => r.startsWith("fd:") && !fetchedRefs.has(r)).slice(0, 2);
+  for (const ref of lookups) {
+    try {
+      const m = await fd<FdMatch>(`/matches/${ref.slice(3)}`);
+      if (m?.homeTeam?.name && m?.awayTeam?.name) matches.push(m);
+    } catch (e) {
+      console.error("stuck match lookup failed", ref, e);
+    }
+  }
   const teamRefs = [...new Set(matches.flatMap((m) => [String(m.homeTeam.id), String(m.awayTeam.id)]))];
   const { data: stats } = await db.from("provider_team_stats").select("*").in("team_ref", teamRefs.length ? teamRefs : ["-"]);
   const byTeam = new Map((stats ?? []).map((s) => [s.team_ref, s]));
