@@ -31,6 +31,24 @@ export function potentialReturnMinor(stakeMinor: number, odds: number, maxPayout
   return maxPayoutMinor != null ? Math.min(raw, maxPayoutMinor) : raw;
 }
 
+export type SelectionSide = "home" | "away" | "neutral";
+
+/** Which team a selection backs, so the bet slip can show that team's crest (neutral = gray ball). */
+export function selectionSide(label: string, marketName = ""): SelectionSide {
+  const l = label.trim();
+  if (["1", "1X", "1/1", "X/1"].includes(l) || l.startsWith("Home ") || marketName.startsWith("Home Team")) return "home";
+  if (["2", "X2", "2/2", "X/2"].includes(l) || l.startsWith("Away ") || marketName.startsWith("Away Team")) return "away";
+  return "neutral";
+}
+
+/** Friendly selection text for the bet slip: "1" → home team, "2" → away team, "X" → Draw. */
+export function selectionDisplay(label: string, home?: string, away?: string): string {
+  if (label === "1" && home) return home;
+  if (label === "2" && away) return away;
+  if (label === "X") return "Draw";
+  return label;
+}
+
 export function formatOdds(odds: number | string | null | undefined): string {
   const n = Number(odds);
   return Number.isFinite(n) ? n.toFixed(2) : "-";
