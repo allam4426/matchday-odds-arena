@@ -78,6 +78,13 @@
       "when": 1793669917909,
       "tag": "0010_crypto_wallets",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1793750887821,
+      "tag": "0011_combo_odds_reduction",
+      "breakpoints": true
     }
   ]
 }

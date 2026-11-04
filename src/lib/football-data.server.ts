@@ -43,7 +43,7 @@ async function fd<T>(path: string): Promise<T> {
 
 function mapStatus(s: string) {
   switch (s) {
-    case "IN_PLAY": case "PAUSED": case "SUSPENDED": return "live";
+    case "LIVE": case "IN_PLAY": case "PAUSED": case "SUSPENDED": case "EXTRA_TIME": case "PENALTY_SHOOTOUT": return "live";
     case "FINISHED": case "AWARDED": return "finished";
     case "POSTPONED": return "postponed";
     case "CANCELLED": return "cancelled";

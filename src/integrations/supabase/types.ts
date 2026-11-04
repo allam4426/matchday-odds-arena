@@ -991,6 +991,7 @@ export type Database = {
       cancel_deposit: { Args: { _id: string }; Returns: undefined }
       cancel_withdrawal: { Args: { _id: string }; Returns: undefined }
       claim_first_admin: { Args: never; Returns: undefined }
+      combo_total_odds: { Args: { _raw: number }; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

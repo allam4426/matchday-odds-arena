@@ -10,12 +10,22 @@ import { Input } from "@/components/ui/input";
 import { useBetSlip, type SlipItem } from "@/components/betslip/bet-slip-context";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { combinedOdds, formatOdds, parseRpcError, potentialReturnMinor } from "@/lib/betting";
+import { TeamCrest } from "@/components/sports/MatchCard";
+import { SoccerBallIcon } from "@/components/sports/SoccerBallIcon";
+import { combinedOdds, formatOdds, parseRpcError, potentialReturnMinor, selectionDisplay, selectionSide } from "@/lib/betting";
 import { formatMoney, parseMoneyToMinor } from "@/lib/money";
 import { useSettings } from "@/lib/settings";
 import { cn } from "@/lib/utils";
 
-type LiveState = { odds: number; open: boolean };
+type LiveState = {
+  odds: number;
+  open: boolean;
+  live: boolean;
+  home: string;
+  away: string;
+  homeCrest: string | null;
+  awayCrest: string | null;
+};
 
 function useLiveSelections(ids: string[]) {
   return useQuery({
@@ -24,21 +34,39 @@ function useLiveSelections(ids: string[]) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("selections")
-        .select("id, odds, result, market:markets(status, match:matches(status, kickoff_at, is_hidden))")
+        .select(
+          "id, odds, result, market:markets(status, match:matches(status, kickoff_at, is_hidden, home_team, away_team, home_crest, away_crest))",
+        )
         .in("id", ids);
       if (error) throw error;
       const map: Record<string, LiveState> = {};
       for (const row of data ?? []) {
         const market = row.market as unknown as {
           status: string;
-          match: { status: string; kickoff_at: string; is_hidden: boolean };
+          match: {
+            status: string;
+            kickoff_at: string;
+            is_hidden: boolean;
+            home_team: string;
+            away_team: string;
+            home_crest: string | null;
+            away_crest: string | null;
+          };
         } | null;
         const match = market?.match;
         const matchOpen =
           !!match &&
           !match.is_hidden &&
           (match.status === "live" || (match.status === "scheduled" && new Date(match.kickoff_at).getTime() > Date.now()));
-        map[row.id] = { odds: Number(row.odds), open: row.result === "pending" && market?.status === "open" && matchOpen };
+        map[row.id] = {
+          odds: Number(row.odds),
+          open: row.result === "pending" && market?.status === "open" && matchOpen,
+          live: match?.status === "live",
+          home: match?.home_team ?? "",
+          away: match?.away_team ?? "",
+          homeCrest: match?.home_crest ?? null,
+          awayCrest: match?.away_crest ?? null,
+        };
       }
       return map;
     },
@@ -46,7 +74,7 @@ function useLiveSelections(ids: string[]) {
   });
 }
 
-const QUICK_STAKES = [500, 1000, 2500, 5000];
+const QUICK_STAKES = [5000, 10000, 25000, 50000];
 
 export function BetSlip({ onClose }: { onClose?: () => void }) {
   const slip = useBetSlip();
@@ -72,9 +100,10 @@ export function BetSlip({ onClose }: { onClose?: () => void }) {
   }, [slip.items]);
 
   const mode = slip.items.length < 2 ? "single" : slip.mode;
-  const rawComboOdds = combinedOdds(slip.items.map((i) => i.odds));
-  const comboOdds = combinedOdds(slip.items.map((i) => i.odds), Number(settings.max_combo_odds) || 100);
-  const comboCapped = rawComboOdds > comboOdds;
+  const comboOdds = combinedOdds(
+    slip.items.map((i) => i.odds),
+    Number(settings.combo_reduce_from) || 10,
+  );
   const comboStakeMinor = parseMoneyToMinor(slip.comboStake) ?? 0;
 
   const singleTotals = slip.items.reduce(
@@ -87,6 +116,11 @@ export function BetSlip({ onClose }: { onClose?: () => void }) {
     },
     { stake: 0, ret: 0 },
   );
+  const minStake = Number(settings.min_stake_minor) || 0;
+  const singleBelowMin = slip.items.some((i) => {
+    const s = parseMoneyToMinor(slip.singleStakes[i.selectionId] ?? "") ?? 0;
+    return s > 0 && s < minStake;
+  });
 
   const totalStake = mode === "combo" ? comboStakeMinor : singleTotals.stake;
   const potential =
@@ -99,6 +133,15 @@ export function BetSlip({ onClose }: { onClose?: () => void }) {
   if (mode === "combo" && slip.items.length > settings.max_combo_selections)
     blockers.push(`A combo can have at most ${settings.max_combo_selections} selections.`);
   if (totalStake <= 0) blockers.push("Enter a stake.");
+  if ((mode === "combo" && comboStakeMinor > 0 && comboStakeMinor < minStake) || (mode === "single" && singleBelowMin))
+    blockers.push(`Minimum stake is ${formatMoney(minStake, settings.currency)}.`);
+  const payoutCapped =
+    mode === "combo"
+      ? comboStakeMinor > 0 && Math.floor(comboStakeMinor * comboOdds) > settings.max_payout_minor
+      : slip.items.some((i) => {
+          const s = parseMoneyToMinor(slip.singleStakes[i.selectionId] ?? "") ?? 0;
+          return s > 0 && Math.floor(s * i.odds) > settings.max_payout_minor;
+        });
 
   async function placeBets() {
     if (!user) return;
@@ -211,7 +254,9 @@ export function BetSlip({ onClose }: { onClose?: () => void }) {
           <div className="flex-1 space-y-2 overflow-y-auto p-2">
             {slip.items.map((item) => {
               const st = state(item);
-              const liveOdds = live.data?.[item.selectionId]?.odds;
+              const info = live.data?.[item.selectionId];
+              const liveOdds = info?.odds;
+              const side = selectionSide(item.label, item.marketName);
               const stakeStr = slip.singleStakes[item.selectionId] ?? "";
               const stakeMinor = parseMoneyToMinor(stakeStr) ?? 0;
               return (
@@ -223,10 +268,28 @@ export function BetSlip({ onClose }: { onClose?: () => void }) {
                   )}
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold">{item.label}</p>
-                      <p className="truncate text-xs text-muted-foreground">{item.marketName}</p>
-                      <p className="truncate text-xs text-muted-foreground">{item.matchLabel}</p>
+                    <div className="flex min-w-0 items-start gap-2.5">
+                      <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center">
+                        {side === "home" && info ? (
+                          <TeamCrest src={info.homeCrest} name={info.home} size={26} />
+                        ) : side === "away" && info ? (
+                          <TeamCrest src={info.awayCrest} name={info.away} size={26} />
+                        ) : (
+                          <SoccerBallIcon size={24} />
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="flex items-center gap-1.5 text-sm font-semibold">
+                          <span className="truncate">{selectionDisplay(item.label, info?.home, info?.away)}</span>
+                          {info?.live && (
+                            <span className="inline-flex shrink-0 items-center gap-1 rounded bg-live/15 px-1.5 py-px text-[10px] font-bold uppercase text-live">
+                              <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-live" /> Live
+                            </span>
+                          )}
+                        </p>
+                        <p className="truncate text-xs text-muted-foreground">{item.marketName}</p>
+                        <p className="truncate text-xs text-muted-foreground">{item.matchLabel}</p>
+                      </div>
                     </div>
                     <div className="flex items-center gap-2">
                       {st === "closed" ? (
@@ -266,7 +329,7 @@ export function BetSlip({ onClose }: { onClose?: () => void }) {
                     <div className="mt-2 flex items-center gap-2">
                       <Input
                         inputMode="decimal"
-                        placeholder="Stake"
+                        placeholder={`Stake (min ${(minStake / 100).toFixed(0)})`}
                         value={stakeStr}
                         onChange={(e) => slip.setSingleStake(item.selectionId, e.target.value)}
                         className="h-9 bg-background font-mono"
@@ -292,14 +355,9 @@ export function BetSlip({ onClose }: { onClose?: () => void }) {
                   <span className="text-muted-foreground">{slip.items.length}-fold combo odds</span>
                   <span className="font-mono text-base font-bold text-primary">{formatOdds(comboOdds)}</span>
                 </div>
-                {comboCapped && (
-                  <p className="text-[11px] text-warning">
-                    Combo odds are capped at {formatOdds(comboOdds)} (full odds {formatOdds(rawComboOdds)}).
-                  </p>
-                )}
                 <Input
                   inputMode="decimal"
-                  placeholder="Combo stake"
+                  placeholder={`Combo stake (min ${(minStake / 100).toFixed(0)})`}
                   value={slip.comboStake}
                   onChange={(e) => slip.setComboStake(e.target.value)}
                   className="h-10 bg-background font-mono"
@@ -348,6 +406,11 @@ export function BetSlip({ onClose }: { onClose?: () => void }) {
                   {formatMoney(potential, settings.currency)}
                 </span>
               </div>
+              {payoutCapped && (
+                <p className="text-[11px] text-warning">
+                  Maximum payout per ticket is {formatMoney(settings.max_payout_minor, settings.currency)}.
+                </p>
+              )}
             </div>
 
             {user ? (

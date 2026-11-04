@@ -12,7 +12,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { parseRpcError } from "@/lib/betting";
-import { BANK_PRESETS, type BankAccount, useSettings } from "@/lib/settings";
+import { combinedOdds } from "@/lib/betting";
+import { formatMoney, minorToInput, parseMoneyToMinor } from "@/lib/money";
+import { BANK_PRESETS, type AppSettings, type BankAccount, useSettings } from "@/lib/settings";
 
 export const Route = createFileRoute("/_authenticated/admin/settings")({
   component: AdminSettings,
@@ -61,7 +63,8 @@ function AdminSettings() {
 
   return (
     <div className="max-w-2xl space-y-3">
-      <div className="flex items-center justify-between gap-2">
+      <BettingLimits settings={settings} />
+      <div className="flex items-center justify-between gap-2 pt-4">
         <div>
           <h1 className="font-semibold">Deposit bank accounts</h1>
           <p className="text-xs text-muted-foreground">Customers choose one of the visible banks, transfer, and upload their slip.</p>
@@ -99,6 +102,83 @@ function AdminSettings() {
       ))}
 
       <Button onClick={save} disabled={busy}>{busy ? "Saving…" : "Save bank accounts"}</Button>
+    </div>
+  );
+}
+
+/** House-risk controls: minimum/maximum stake, maximum ticket payout and smooth combo-odds reduction. */
+function BettingLimits({ settings }: { settings: AppSettings }) {
+  const queryClient = useQueryClient();
+  const [minStake, setMinStake] = useState("");
+  const [maxStake, setMaxStake] = useState("");
+  const [maxPayout, setMaxPayout] = useState("");
+  const [reduceFrom, setReduceFrom] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    setMinStake(minorToInput(settings.min_stake_minor));
+    setMaxStake(minorToInput(settings.max_stake_minor));
+    setMaxPayout(minorToInput(settings.max_payout_minor));
+    setReduceFrom(String(settings.combo_reduce_from ?? 10));
+  }, [settings.min_stake_minor, settings.max_stake_minor, settings.max_payout_minor, settings.combo_reduce_from]);
+
+  const reduce = Number(reduceFrom);
+  const example = [2.17, 2.15, 2.19, 4.19, 4.42];
+
+  async function save() {
+    const min = parseMoneyToMinor(minStake);
+    const max = parseMoneyToMinor(maxStake);
+    const payout = parseMoneyToMinor(maxPayout);
+    if (min == null || max == null || payout == null || min <= 0 || max < min || payout <= 0)
+      return toast.error("Check the amounts: minimum must be above 0 and not more than the maximum.");
+    if (!(reduce >= 2 && reduce <= 1000)) return toast.error("Combo reduction must start between 2 and 1000.");
+    setBusy(true);
+    const updates: [string, number][] = [
+      ["min_stake_minor", min],
+      ["max_stake_minor", max],
+      ["max_payout_minor", payout],
+      ["combo_reduce_from", Math.round(reduce * 100) / 100],
+    ];
+    for (const [key, value] of updates) {
+      const { error } = await supabase.rpc("admin_update_setting", { _key: key, _value: value });
+      if (error) {
+        setBusy(false);
+        return toast.error(parseRpcError(error).message);
+      }
+    }
+    setBusy(false);
+    toast.success("Betting limits saved");
+    queryClient.invalidateQueries({ queryKey: ["settings"] });
+  }
+
+  return (
+    <div className="space-y-3 rounded-lg border border-border bg-card p-4">
+      <div>
+        <h1 className="font-semibold">Betting &amp; house limits</h1>
+        <p className="text-xs text-muted-foreground">Applied by the server to every bet. Amounts in {settings.currency}.</p>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div className="space-y-1.5"><Label>Minimum stake</Label>
+          <Input inputMode="decimal" value={minStake} onChange={(e) => setMinStake(e.target.value)} /></div>
+        <div className="space-y-1.5"><Label>Maximum stake</Label>
+          <Input inputMode="decimal" value={maxStake} onChange={(e) => setMaxStake(e.target.value)} /></div>
+        <div className="space-y-1.5"><Label>Maximum payout per ticket</Label>
+          <Input inputMode="decimal" value={maxPayout} onChange={(e) => setMaxPayout(e.target.value)} /></div>
+      </div>
+      <div className="space-y-1.5">
+        <Label>Reduce combo odds above</Label>
+        <Input inputMode="decimal" className="sm:w-40" value={reduceFrom} onChange={(e) => setReduceFrom(e.target.value)} />
+        <p className="text-xs text-muted-foreground">
+          Combos up to this value pay full odds; above it the odds keep growing but much more slowly. Lower = safer for the house.
+          {reduce >= 2 && (
+            <> Example 5-fold ({example.join(" × ")}): full {combinedOdds(example, 1).toFixed(2)} → paid{" "}
+              <span className="font-semibold text-foreground">{combinedOdds(example, reduce).toFixed(2)}</span>
+              {(() => { const p = parseMoneyToMinor(maxPayout); return p ? <> (500 stake returns up to {formatMoney(Math.min(Math.floor(50000 * combinedOdds(example, reduce)), p), settings.currency)})</> : null; })()}.
+            </>
+          )}
+        </p>
+      </div>
+      <Button onClick={save} disabled={busy}>{busy ? "Saving…" : "Save betting limits"}</Button>
     </div>
   );
 }

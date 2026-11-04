@@ -14,3 +14,6 @@
 - [ ] (Blocked: needs sports-data API key from user) Real fixtures, automatic live scores and odds
 - [x] Speed: light match lists (main bet types only), Today/Tomorrow/All filters, "Show more" paging, batched live refreshes
 - [x] Staff login by category + super-admin Staff page
+- [x] Day 1: smooth combo-odds reduction (no hard cap), admin-set max payout (25,000 MVR) and min stake (50 MVR), bet slip crests/gray Draw ball/LIVE tag, live-status sync fix
+- [ ] Day 2: USDT/MVR wallet + exchange rates, crypto wallet manager & review, admin player balances, live support (bot → agent)
+- [ ] Day 3: registration KYC documents, email OTP, username login, final checks, source ZIP

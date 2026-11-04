@@ -92,7 +92,8 @@ export function matchesQuery(filter: MatchFilter, competitionId?: string) {
         .eq("is_hidden", false)
         .in("markets.key", LIST_MARKET_KEYS);
       if (filter === "live") q = q.eq("status", "live");
-      else if (filter === "upcoming") q = q.eq("status", "scheduled").gt("kickoff_at", new Date().toISOString());
+      // Keep just-kicked-off games visible until the score feed marks them live (feed can lag a few minutes).
+      else if (filter === "upcoming") q = q.eq("status", "scheduled").gt("kickoff_at", new Date(Date.now() - 105 * 60_000).toISOString());
       else q = q.in("status", ["scheduled", "live"]).gt("kickoff_at", staleCutoff);
       if (competitionId) q = q.eq("competition_id", competitionId);
       const { data, error } = await q.order("kickoff_at", { ascending: true }).limit(200);
