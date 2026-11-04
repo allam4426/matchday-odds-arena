@@ -7,11 +7,21 @@ function round2(n: number): number {
   return Math.round(Number((n * 100).toFixed(8))) / 100;
 }
 
-/** Combined odds of an accumulator, rounded to 2 decimals and capped like the server. */
-export function combinedOdds(odds: number[], maxOdds?: number): number {
+/** Plain product of the leg odds, rounded to 2 decimals. */
+export function rawComboOdds(odds: number[]): number {
   if (odds.length === 0) return 0;
-  const total = round2(odds.reduce((acc, o) => acc * o, 1));
-  return maxOdds != null && maxOdds > 0 ? Math.min(total, maxOdds) : total;
+  return round2(odds.reduce((acc, o) => acc * o, 1));
+}
+
+/**
+ * Combo odds paid by the house (mirrors combo_total_odds in the database).
+ * Up to `reduceFrom` the full product is paid; above it only the square root of
+ * the extra growth counts, so big accumulators grow smoothly but much slower.
+ */
+export function combinedOdds(odds: number[], reduceFrom = 10): number {
+  const raw = rawComboOdds(odds);
+  if (!(reduceFrom > 1) || raw <= reduceFrom) return raw;
+  return round2(reduceFrom * Math.sqrt(raw / reduceFrom));
 }
 
 /** Potential return (stake included) in minor units, floored and capped at the max payout. */

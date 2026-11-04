@@ -65,7 +65,10 @@ export type AppSettings = {
   max_stake_minor: number;
   max_payout_minor: number;
   max_combo_selections: number;
+  /** DEPRECATED: replaced by combo_reduce_from */
   max_combo_odds: number;
+  /** Combo odds above this value are smoothly reduced. */
+  combo_reduce_from: number;
   restricted_countries: string[];
   bank_details: BankDetails;
   bank_accounts: BankAccount[];
@@ -81,11 +84,12 @@ export const DEFAULT_SETTINGS: AppSettings = {
   min_withdrawal_minor: 2000,
   max_withdrawal_minor: 500_000,
   max_withdrawals_per_day: 2,
-  min_stake_minor: 100,
+  min_stake_minor: 5000,
   max_stake_minor: 100_000,
-  max_payout_minor: 5_000_000,
+  max_payout_minor: 2_500_000,
   max_combo_selections: 12,
   max_combo_odds: 100,
+  combo_reduce_from: 10,
   restricted_countries: [],
   bank_details: { bank_name: "", account_name: "", account_number: "", instructions: "" },
   bank_accounts: [],
