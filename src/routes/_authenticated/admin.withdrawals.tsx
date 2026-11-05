@@ -14,6 +14,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { parseRpcError } from "@/lib/betting";
 import { downloadCsv } from "@/lib/csv";
 import { formatMoney, maskAccount } from "@/lib/money";
+import { Money } from "@/components/Money";
 import { useSettings } from "@/lib/settings";
 import { WITHDRAWAL_STATUS_LABEL } from "@/lib/wallet";
 
@@ -88,7 +89,7 @@ function AdminWithdrawals() {
               <tr key={r.id}>
                 <td className="px-3 py-2 text-xs">{format(new Date(r.created_at), "d MMM HH:mm")}</td>
                 <td className="px-3 py-2">{r.profile?.username}</td>
-                <td className="px-3 py-2 font-mono font-semibold">{formatMoney(r.amount_minor, currency)}</td>
+                <td className="px-3 py-2 font-mono font-semibold"><Money minor={r.amount_minor} currency={currency} /></td>
                 <td className="px-3 py-2 text-xs">{r.bank_name} {maskAccount(r.account_number)}</td>
                 <td className="px-3 py-2"><StatusBadge status={r.status} label={WITHDRAWAL_STATUS_LABEL[r.status]} /></td>
                 <td className="px-3 py-2 text-right"><Button size="sm" variant="secondary" onClick={() => { setActive(r); setNote(""); setPayRef(""); }}>Review</Button></td>
@@ -105,7 +106,7 @@ function AdminWithdrawals() {
             <div className="space-y-3 text-sm">
               <div className="grid grid-cols-2 gap-2">
                 <p>User: <b>{active.profile?.username}</b></p>
-                <p>Amount: <b className="font-mono">{formatMoney(active.amount_minor, currency)}</b></p>
+                <p>Amount: <b className="font-mono"><Money minor={active.amount_minor} currency={currency} /></b></p>
                 <p>Legal name: <b>{active.profile?.full_name}</b></p>
                 <p>Status: <StatusBadge status={active.status} /></p>
               </div>

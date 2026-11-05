@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { formatOdds } from "@/lib/betting";
 import { formatMoney } from "@/lib/money";
+import { Money } from "@/components/Money";
 import { useSettings } from "@/lib/settings";
 import { cn } from "@/lib/utils";
 
@@ -108,7 +109,7 @@ function MyBets() {
               <footer className="grid grid-cols-3 gap-2 border-t border-border px-4 py-3 text-xs">
                 <div>
                   <p className="text-muted-foreground">Stake</p>
-                  <p className="font-mono text-sm font-semibold">{formatMoney(b.stake_minor, currency)}</p>
+                  <p className="font-mono text-sm font-semibold"><Money minor={b.stake_minor} currency={currency} /></p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Odds</p>
@@ -119,15 +120,15 @@ function MyBets() {
                     <>
                       <p className="text-muted-foreground">Potential returns</p>
                       <p className="font-mono text-sm font-bold text-primary">
-                        {formatMoney(b.potential_return_minor, currency)}
+                        <Money minor={b.potential_return_minor} currency={currency} />
                       </p>
                     </>
                   ) : (
                     <>
                       <p className="text-muted-foreground">Returns</p>
-                      <p className="font-mono text-sm font-bold">{formatMoney(b.payout_minor, currency)}</p>
+                      <p className="font-mono text-sm font-bold"><Money minor={b.payout_minor} currency={currency} /></p>
                       {b.status === "won" && (
-                        <p className="text-[11px] text-success">Net winnings {formatMoney(net, currency)}</p>
+                        <p className="text-[11px] text-success">Net winnings <Money minor={net} currency={currency} /></p>
                       )}
                       {b.status === "void" && <p className="text-[11px] text-muted-foreground">Stake returned</p>}
                     </>

@@ -1,5 +1,6 @@
 import { MARKETS, winners } from "@/lib/markets";
 import { estimateMinute, priceMatch, type TeamRates } from "@/lib/pricing";
+import { afStatus, fetchLiveIfAllowed, findLive } from "@/lib/api-football.server";
 
 const MARKET_DEFS = MARKETS.map((d) => ({ key: d.key, name: d.name, labels: d.labels }));
 
@@ -88,6 +89,32 @@ export async function syncLiveMatches() {
       console.error("stuck match lookup failed", ref, e);
     }
   }
+  // Fast live overlay from API-Football (throttled to its free daily quota).
+  const minuteOverride = new Map<number, number>();
+  let afMatched = 0;
+  const haveLive = matches.some((m) => {
+    const t = new Date(m.utcDate).getTime();
+    return mapStatus(m.status) === "live" || (m.status !== "FINISHED" && t <= now.getTime() && now.getTime() - t < 130 * 60000);
+  });
+  try {
+    const live = await fetchLiveIfAllowed(db, haveLive);
+    if (live?.length) {
+      for (const m of matches) {
+        if (mapStatus(m.status) === "finished") continue;
+        const f = findLive(live, m.homeTeam.name!, m.awayTeam.name!, m.utcDate);
+        const st = f ? afStatus(f.fixture.status.short) : null;
+        if (!f || !st) continue;
+        m.status = st;
+        if (f.goals.home != null && f.goals.away != null) m.score.fullTime = { home: f.goals.home, away: f.goals.away };
+        if (f.score.halftime.home != null) m.score.halfTime = { home: f.score.halftime.home, away: f.score.halftime.away };
+        if (f.fixture.status.elapsed != null) minuteOverride.set(m.id, f.fixture.status.elapsed);
+        afMatched++;
+      }
+    }
+  } catch (e) {
+    console.error("api-football overlay failed", e);
+  }
+
   const teamRefs = [...new Set(matches.flatMap((m) => [String(m.homeTeam.id), String(m.awayTeam.id)]))];
   const { data: stats } = await db.from("provider_team_stats").select("*").in("team_ref", teamRefs.length ? teamRefs : ["-"]);
   const byTeam = new Map((stats ?? []).map((s) => [s.team_ref, s]));
@@ -111,7 +138,7 @@ export async function syncLiveMatches() {
     const hs = m.score.fullTime.home ?? 0;
     const as = m.score.fullTime.away ?? 0;
     const elapsed = (now.getTime() - new Date(m.utcDate).getTime()) / 60000;
-    const minute = status === "live" ? estimateMinute(m.utcDate, m.status, now.getTime()) : null;
+    const minute = status === "live" ? (minuteOverride.get(m.id) ?? estimateMinute(m.utcDate, m.status, now.getTime())) : null;
     const comp = COMP_ORDER[m.competition.code] ?? { sort: 50, featured: false };
     const row: Record<string, unknown> = {
       comp_ref: String(m.competition.id),
@@ -165,7 +192,7 @@ export async function syncLiveMatches() {
   if (error) throw new Error(error.message);
   const crests = matches.map((m) => ({ ref: `fd:${m.id}`, hc: m.homeTeam.crest ?? null, ac: m.awayTeam.crest ?? null }));
   await db.rpc("provider_set_crests", { _items: crests as never });
-  return { fetched: matches.length, ...(result as Record<string, number>) };
+  return { fetched: matches.length, fastLive: afMatched, ...(result as Record<string, number>) };
 }
 
 /** Refreshes league tables used by the odds engine; rotates through competitions to respect the API rate limit. */

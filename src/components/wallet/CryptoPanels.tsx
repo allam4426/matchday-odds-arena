@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { parseRpcError } from "@/lib/betting";
 import { formatMoney, parseMoneyToMinor } from "@/lib/money";
+import { Money } from "@/components/Money";
 import { type CryptoWallet, cryptoToMinor, minorToCrypto, useSettings } from "@/lib/settings";
 import { cn } from "@/lib/utils";
 
@@ -169,7 +170,7 @@ export function CryptoDeposit({ wallets }: { wallets: CryptoWallet[] }) {
             </Button>
           </div>
           <p className="text-[11px] text-muted-foreground">
-            Rate: 1 {wallet.symbol} = {formatMoney(wallet.mvr_rate * 100, settings.currency)}. Your wallet is credited in {settings.currency}.
+            Rate: 1 {wallet.symbol} = <Money minor={wallet.mvr_rate * 100} currency={settings.currency} />. Your wallet is credited in {settings.currency}.
           </p>
         </div>
         <div className="mx-auto rounded-lg bg-foreground p-3">
@@ -182,7 +183,7 @@ export function CryptoDeposit({ wallets }: { wallets: CryptoWallet[] }) {
           <Input id="cd-amount" inputMode="decimal" className="font-mono" value={amount} onChange={(e) => setAmount(e.target.value)} />
           {valid && (
             <p className="text-[11px] text-muted-foreground">
-              {coins} {wallet.symbol} ≈ <b className="text-foreground">{formatMoney(creditMinor, settings.currency)}</b>
+              {coins} {wallet.symbol} ≈ <b className="text-foreground"><Money minor={creditMinor} currency={settings.currency} /></b>
             </p>
           )}
         </div>
@@ -257,7 +258,7 @@ export function CryptoWithdrawForm({
         <Input id="cw-amount" inputMode="decimal" className="font-mono" value={amount} onChange={(e) => setAmount(e.target.value)} />
         <p className="text-[11px] text-muted-foreground">
           You receive ≈ <b className="text-foreground">{minorToCrypto(minor, wallet.mvr_rate)} {wallet.symbol}</b> (1 {wallet.symbol} ={" "}
-          {formatMoney(wallet.mvr_rate * 100, settings.currency)}) · Available {formatMoney(availableMinor, settings.currency)}
+          <Money minor={wallet.mvr_rate * 100} currency={settings.currency} />) · Available <Money minor={availableMinor} currency={settings.currency} />
         </p>
       </div>
       <p className="flex items-center gap-2 rounded-md bg-warning/15 p-2.5 text-xs font-semibold text-warning">

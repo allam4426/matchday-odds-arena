@@ -5,6 +5,7 @@ import { Crown, Trophy, Zap } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useBetSlip, type SlipItem } from "@/components/betslip/bet-slip-context";
 import { formatMoney } from "@/lib/money";
+import { Money } from "@/components/Money";
 import { isBettable, matchesQuery, matchLabel, type Match } from "@/lib/sportsbook";
 
 type FeedBet = {
@@ -141,8 +142,8 @@ export function LiveBetsFeed() {
                 <span className="font-semibold">{r.user}</span>
               </span>
               <span className="flex gap-4 tabular-nums">
-                <span className="text-muted-foreground">{formatMoney(r.total)}</span>
-                <span className="font-bold text-primary">{formatMoney(r.prize)}</span>
+                <span className="text-muted-foreground"><Money minor={r.total} /></span>
+                <span className="font-bold text-primary"><Money minor={r.prize} /></span>
               </span>
             </div>
           ))}
@@ -176,7 +177,7 @@ export function LiveBetsFeed() {
               </span>
               <span className="rounded bg-primary/15 px-2 py-0.5 text-right font-bold tabular-nums text-primary">{b.odds.toFixed(2)}</span>
               <span className="text-right tabular-nums">
-                {formatMoney(b.stakeMinor)}
+                <Money minor={b.stakeMinor} />
                 <span className="block text-[10px] text-muted-foreground">{timeAgo(b.at, now)}</span>
               </span>
             </button>
@@ -226,11 +227,11 @@ function BetInspector({ bet, onClose }: { bet: FeedBet | null; onClose: () => vo
             </div>
             <div className="rounded-md bg-secondary p-2">
               <p className="text-muted-foreground">Stake</p>
-              <p className="font-bold">{formatMoney(bet.stakeMinor)}</p>
+              <p className="font-bold"><Money minor={bet.stakeMinor} /></p>
             </div>
             <div className="rounded-md bg-secondary p-2">
               <p className="text-muted-foreground">Payout</p>
-              <p className="font-bold text-primary">{formatMoney(Math.round(bet.stakeMinor * bet.odds))}</p>
+              <p className="font-bold text-primary"><Money minor={Math.round(bet.stakeMinor * bet.odds)} /></p>
             </div>
           </div>
           <button onClick={copy} className="mt-2 w-full rounded-md bg-primary py-2.5 text-sm font-bold uppercase tracking-wide text-primary-foreground">

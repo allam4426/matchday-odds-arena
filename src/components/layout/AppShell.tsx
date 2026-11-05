@@ -32,6 +32,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { formatMoney } from "@/lib/money";
+import { Money } from "@/components/Money";
 import { useSettings } from "@/lib/settings";
 import { useWalletSummary } from "@/lib/wallet";
 import { cn } from "@/lib/utils";
@@ -144,7 +145,7 @@ function AccountArea() {
         className="flex items-center gap-2 rounded-md border border-primary/60 py-1 pl-2.5 pr-1 hover:bg-secondary"
       >
         <span className="font-mono text-sm font-bold text-foreground tabular">
-          {formatMoney(wallet?.available_minor ?? 0, settings.currency)}
+          <Money minor={wallet?.available_minor ?? 0} currency={settings.currency} />
         </span>
         <span className="grid h-7 w-8 place-items-center rounded bg-primary text-primary-foreground">
           <Wallet className="h-4 w-4" />
@@ -164,7 +165,7 @@ function AccountArea() {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuItem asChild>
-            <Link to="/wallet">Wallet · {formatMoney(wallet?.available_minor ?? 0, settings.currency)}</Link>
+            <Link to="/wallet">Wallet · <Money minor={wallet?.available_minor ?? 0} currency={settings.currency} /></Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
             <Link to="/wallet" search={{ tab: "history" }}>

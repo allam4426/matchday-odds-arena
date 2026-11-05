@@ -14,6 +14,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { parseRpcError } from "@/lib/betting";
 import { combinedOdds } from "@/lib/betting";
 import { formatMoney, minorToInput, parseMoneyToMinor } from "@/lib/money";
+import { Money } from "@/components/Money";
 import { BANK_PRESETS, type AppSettings, type BankAccount, useSettings } from "@/lib/settings";
 
 export const Route = createFileRoute("/_authenticated/admin/settings")({
@@ -173,7 +174,7 @@ function BettingLimits({ settings }: { settings: AppSettings }) {
           {reduce >= 2 && (
             <> Example 5-fold ({example.join(" × ")}): full {combinedOdds(example, 1).toFixed(2)} → paid{" "}
               <span className="font-semibold text-foreground">{combinedOdds(example, reduce).toFixed(2)}</span>
-              {(() => { const p = parseMoneyToMinor(maxPayout); return p ? <> (500 stake returns up to {formatMoney(Math.min(Math.floor(50000 * combinedOdds(example, reduce)), p), settings.currency)})</> : null; })()}.
+              {(() => { const p = parseMoneyToMinor(maxPayout); return p ? <> (500 stake returns up to <Money minor={Math.min(Math.floor(50000 * combinedOdds(example, reduce)), p)} currency={settings.currency} />)</> : null; })()}.
             </>
           )}
         </p>

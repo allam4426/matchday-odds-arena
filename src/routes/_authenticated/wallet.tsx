@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { parseRpcError } from "@/lib/betting";
 import { formatMoney, maskAccount, parseMoneyToMinor } from "@/lib/money";
+import { Money } from "@/components/Money";
 import { BANK_PRESETS, minorToCrypto, useSettings, visibleBanks, visibleCryptoWallets } from "@/lib/settings";
 import { CoinRow, CryptoDeposit, CryptoWithdrawForm } from "@/components/wallet/CryptoPanels";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -79,7 +80,7 @@ function WalletPage() {
   );
 }
 
-function Stat({ label, value, accent, hint }: { label: string; value: string; accent?: boolean; hint?: string }) {
+function Stat({ label, value, accent, hint }: { label: string; value: React.ReactNode; accent?: boolean; hint?: string }) {
   return (
     <div className="rounded-lg border border-border bg-card p-4">
       <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
@@ -92,7 +93,7 @@ function Stat({ label, value, accent, hint }: { label: string; value: string; ac
 function Overview() {
   const { data: w } = useWalletSummary();
   const { currency } = useSettings();
-  const m = (v?: number) => formatMoney(v ?? 0, currency);
+  const m = (v?: number) => <Money minor={v ?? 0} currency={currency} />;
   return (
     <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
       <div className="col-span-2 rounded-lg border border-primary/40 bg-card p-5">
@@ -270,8 +271,8 @@ function Deposit() {
             <Label htmlFor="dep-amount">Amount ({settings.currency})</Label>
             <Input id="dep-amount" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} className="font-mono" />
             <p className="text-[11px] text-muted-foreground">
-              Min {formatMoney(settings.min_deposit_minor, settings.currency)} · Max{" "}
-              {formatMoney(settings.max_deposit_minor, settings.currency)}
+              Min <Money minor={settings.min_deposit_minor} currency={settings.currency} /> · Max{" "}
+              <Money minor={settings.max_deposit_minor} currency={settings.currency} />
             </p>
           </div>
           <div className="space-y-1.5">
@@ -304,9 +305,9 @@ function Deposit() {
               <li key={d.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm">
                 <div>
                   <p className="font-mono font-semibold">
-                    {d.method === "crypto" ? `${Number(d.crypto_amount)} ${d.crypto_symbol}` : formatMoney(d.amount_minor, settings.currency)}
+                    {d.method === "crypto" ? `${Number(d.crypto_amount)} ${d.crypto_symbol}` : <Money minor={d.amount_minor} currency={settings.currency} />}
                     {d.method === "crypto" && (
-                      <span className="ml-1.5 text-xs font-normal text-muted-foreground">≈ {formatMoney(d.amount_minor, settings.currency)}</span>
+                      <span className="ml-1.5 text-xs font-normal text-muted-foreground">≈ <Money minor={d.amount_minor} currency={settings.currency} /></span>
                     )}
                   </p>
                   <p className="text-xs text-muted-foreground">
@@ -404,7 +405,7 @@ function Withdraw() {
           <div className="flex items-baseline justify-between">
             <h2 className="text-sm font-semibold uppercase tracking-wide">Withdrawal methods</h2>
             <p className="text-xs text-muted-foreground">
-              Available <span className="font-mono font-bold text-primary">{formatMoney(available, settings.currency)}</span>
+              Available <span className="font-mono font-bold text-primary"><Money minor={available} currency={settings.currency} /></span>
             </p>
           </div>
           <button
@@ -449,7 +450,7 @@ function Withdraw() {
             <h2 className="font-semibold">Bank Transfer</h2>
           </div>
           <p className="text-xs text-muted-foreground">
-            Available <span className="font-mono font-bold text-primary">{formatMoney(available, settings.currency)}</span>
+            Available <span className="font-mono font-bold text-primary"><Money minor={available} currency={settings.currency} /></span>
           </p>
         </div>
         <div className="space-y-1.5">
@@ -471,8 +472,8 @@ function Withdraw() {
           <Label htmlFor="wd-amount">Amount ({settings.currency})</Label>
           <Input id="wd-amount" inputMode="decimal" className="font-mono" value={f.amount} onChange={(e) => setF({ ...f, amount: e.target.value })} />
           <p className="text-[11px] text-muted-foreground">
-            Min {formatMoney(settings.min_withdrawal_minor, settings.currency)} · Max{" "}
-            {formatMoney(settings.max_withdrawal_minor, settings.currency)}
+            Min <Money minor={settings.min_withdrawal_minor} currency={settings.currency} /> · Max{" "}
+            <Money minor={settings.max_withdrawal_minor} currency={settings.currency} />
           </p>
         </div>
         <div className="space-y-1.5">
@@ -505,7 +506,7 @@ function Withdraw() {
               <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm">
                 <div>
                   <p className="font-mono font-semibold">
-                    {formatMoney(r.amount_minor, settings.currency)}
+                    <Money minor={r.amount_minor} currency={settings.currency} />
                     {r.method === "crypto" && (
                       <span className="ml-1.5 text-xs font-normal text-muted-foreground">
                         ≈ {Number(r.crypto_amount)} {r.crypto_symbol}
@@ -580,9 +581,9 @@ function History() {
               </td>
               <td className={cn("px-4 py-2 text-right font-mono font-semibold", e.amount_minor > 0 ? "text-success" : e.amount_minor < 0 ? "text-foreground" : "text-muted-foreground")}>
                 {e.amount_minor > 0 ? "+" : ""}
-                {formatMoney(e.amount_minor, currency)}
+                <Money minor={e.amount_minor} currency={currency} />
               </td>
-              <td className="px-4 py-2 text-right font-mono">{formatMoney(e.balance_after_minor, currency)}</td>
+              <td className="px-4 py-2 text-right font-mono"><Money minor={e.balance_after_minor} currency={currency} /></td>
             </tr>
           ))}
         </tbody>

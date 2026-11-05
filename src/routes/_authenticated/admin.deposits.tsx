@@ -14,6 +14,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { parseRpcError } from "@/lib/betting";
 import { downloadCsv } from "@/lib/csv";
 import { formatMoney } from "@/lib/money";
+import { Money } from "@/components/Money";
 import { useSettings } from "@/lib/settings";
 import { DEPOSIT_STATUS_LABEL } from "@/lib/wallet";
 
@@ -107,7 +108,7 @@ function AdminDeposits() {
               <tr key={r.id}>
                 <td className="px-3 py-2 text-xs">{format(new Date(r.created_at), "d MMM HH:mm")}</td>
                 <td className="px-3 py-2">{r.profile?.username}<span className="block text-xs text-muted-foreground">{r.profile?.email}</span></td>
-                <td className="px-3 py-2 font-mono font-semibold">{formatMoney(r.amount_minor, currency)}</td>
+                <td className="px-3 py-2 font-mono font-semibold"><Money minor={r.amount_minor} currency={currency} /></td>
                 <td className="px-3 py-2 font-mono text-xs">{r.bank_reference}{r.flagged_duplicate && <span className="ml-1 font-sans font-semibold text-destructive">Duplicate ref</span>}</td>
                 <td className="px-3 py-2"><StatusBadge status={r.status} label={DEPOSIT_STATUS_LABEL[r.status]} /></td>
                 <td className="px-3 py-2 text-right"><Button size="sm" variant="secondary" onClick={() => open(r)}>Review</Button></td>
@@ -124,7 +125,7 @@ function AdminDeposits() {
             <div className="space-y-3 text-sm">
               <div className="grid grid-cols-2 gap-2">
                 <p>User: <b>{active.profile?.username}</b></p>
-                <p>Amount: <b className="font-mono">{formatMoney(active.amount_minor, currency)}</b></p>
+                <p>Amount: <b className="font-mono"><Money minor={active.amount_minor} currency={currency} /></b></p>
                 <p>Bank ref: <b className="font-mono">{active.bank_reference}</b></p>
                 <p>Status: <StatusBadge status={active.status} /></p>
               </div>
