@@ -80,7 +80,7 @@ function WalletPage() {
   );
 }
 
-function Stat({ label, value, accent, hint }: { label: string; value: string; accent?: boolean; hint?: string }) {
+function Stat({ label, value, accent, hint }: { label: string; value: React.ReactNode; accent?: boolean; hint?: string }) {
   return (
     <div className="rounded-lg border border-border bg-card p-4">
       <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
