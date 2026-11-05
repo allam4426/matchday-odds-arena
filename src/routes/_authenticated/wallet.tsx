@@ -93,7 +93,7 @@ function Stat({ label, value, accent, hint }: { label: string; value: string; ac
 function Overview() {
   const { data: w } = useWalletSummary();
   const { currency } = useSettings();
-  const m = (v?: number) => formatMoney(v ?? 0, currency);
+  const m = (v?: number) => <Money minor={v ?? 0} currency={currency} />;
   return (
     <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
       <div className="col-span-2 rounded-lg border border-primary/40 bg-card p-5">
@@ -305,7 +305,7 @@ function Deposit() {
               <li key={d.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm">
                 <div>
                   <p className="font-mono font-semibold">
-                    {d.method === "crypto" ? `${Number(d.crypto_amount)} ${d.crypto_symbol}` : formatMoney(d.amount_minor, settings.currency)}
+                    {d.method === "crypto" ? `${Number(d.crypto_amount)} ${d.crypto_symbol}` : <Money minor={d.amount_minor} currency={settings.currency} />}
                     {d.method === "crypto" && (
                       <span className="ml-1.5 text-xs font-normal text-muted-foreground">≈ <Money minor={d.amount_minor} currency={settings.currency} /></span>
                     )}
