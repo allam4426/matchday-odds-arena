@@ -14,6 +14,7 @@ import { TeamCrest } from "@/components/sports/MatchCard";
 import { SoccerBallIcon } from "@/components/sports/SoccerBallIcon";
 import { combinedOdds, formatOdds, parseRpcError, potentialReturnMinor, selectionDisplay, selectionSide } from "@/lib/betting";
 import { formatMoney, parseMoneyToMinor } from "@/lib/money";
+import { Money } from "@/components/Money";
 import { useSettings } from "@/lib/settings";
 import { cn } from "@/lib/utils";
 
@@ -338,7 +339,7 @@ export function BetSlip({ onClose }: { onClose?: () => void }) {
                       <div className="w-28 text-right text-xs text-muted-foreground">
                         Returns
                         <div className="font-mono text-sm font-semibold text-foreground">
-                          {formatMoney(potentialReturnMinor(stakeMinor, item.odds, settings.max_payout_minor), settings.currency)}
+                          <Money minor={potentialReturnMinor(stakeMinor, item.odds, settings.max_payout_minor)} currency={settings.currency} />
                         </div>
                       </div>
                     </div>
@@ -398,17 +399,17 @@ export function BetSlip({ onClose }: { onClose?: () => void }) {
             <div className="space-y-1 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Total stake</span>
-                <span className="font-mono font-semibold">{formatMoney(totalStake, settings.currency)}</span>
+                <span className="font-mono font-semibold"><Money minor={totalStake} currency={settings.currency} /></span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Potential returns</span>
                 <span className="font-mono text-base font-bold text-primary">
-                  {formatMoney(potential, settings.currency)}
+                  <Money minor={potential} currency={settings.currency} />
                 </span>
               </div>
               {payoutCapped && (
                 <p className="text-[11px] text-warning">
-                  Maximum payout per ticket is {formatMoney(settings.max_payout_minor, settings.currency)}.
+                  Maximum payout per ticket is <Money minor={settings.max_payout_minor} currency={settings.currency} />.
                 </p>
               )}
             </div>
