@@ -17,7 +17,8 @@ export type AfLive = {
 };
 
 type Usage = { date: string; count: number; last: string | null };
-type Db = Awaited<ReturnType<typeof import("@/integrations/supabase/client.server")["supabaseAdmin"]["from"]>> extends never ? never : any;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Db = import("@supabase/supabase-js").SupabaseClient<any>;
 
 const STRIP = /\b(fc|cf|afc|sc|ac|as|cd|ud|sd|rc|rcd|ssc|ss|us|fk|sk|bk|if|club|de|del|la|the|calcio|futbol|football)\b/g;
 
