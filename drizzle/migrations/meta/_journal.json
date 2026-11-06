@@ -85,6 +85,13 @@
       "when": 1793750887821,
       "tag": "0011_combo_odds_reduction",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1793927239816,
+      "tag": "0012_dual_currency_wallet_and_support",
+      "breakpoints": true
     }
   ]
 }

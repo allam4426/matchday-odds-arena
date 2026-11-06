@@ -115,6 +115,7 @@ export type Database = {
       bets: {
         Row: {
           bet_type: string
+          currency: string
           id: string
           payout_minor: number
           placed_at: string
@@ -129,6 +130,7 @@ export type Database = {
         }
         Insert: {
           bet_type: string
+          currency?: string
           id?: string
           payout_minor?: number
           placed_at?: string
@@ -143,6 +145,7 @@ export type Database = {
         }
         Update: {
           bet_type?: string
+          currency?: string
           id?: string
           payout_minor?: number
           placed_at?: string
@@ -206,6 +209,8 @@ export type Database = {
           amount_minor: number
           bank_reference: string
           created_at: string
+          credit_currency: string | null
+          credited_minor: number | null
           crypto_amount: number | null
           crypto_network: string | null
           crypto_rate: number | null
@@ -226,6 +231,8 @@ export type Database = {
           amount_minor: number
           bank_reference: string
           created_at?: string
+          credit_currency?: string | null
+          credited_minor?: number | null
           crypto_amount?: number | null
           crypto_network?: string | null
           crypto_rate?: number | null
@@ -246,6 +253,8 @@ export type Database = {
           amount_minor?: number
           bank_reference?: string
           created_at?: string
+          credit_currency?: string | null
+          credited_minor?: number | null
           crypto_amount?: number | null
           crypto_network?: string | null
           crypto_rate?: number | null
@@ -685,6 +694,71 @@ export type Database = {
           },
         ]
       }
+      support_messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          sender: string
+          sender_id: string | null
+          thread_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          sender: string
+          sender_id?: string | null
+          thread_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          sender?: string
+          sender_id?: string | null
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "support_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_threads: {
+        Row: {
+          agent_id: string | null
+          created_at: string
+          id: string
+          status: string
+          subject: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          agent_id?: string | null
+          created_at?: string
+          id?: string
+          status?: string
+          subject?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          agent_id?: string | null
+          created_at?: string
+          id?: string
+          status?: string
+          subject?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       system_settings: {
         Row: {
           key: string
@@ -730,18 +804,21 @@ export type Database = {
       wallet_accounts: {
         Row: {
           balance_minor: number
+          currency: string
           reserved_minor: number
           updated_at: string
           user_id: string
         }
         Insert: {
           balance_minor?: number
+          currency?: string
           reserved_minor?: number
           updated_at?: string
           user_id: string
         }
         Update: {
           balance_minor?: number
+          currency?: string
           reserved_minor?: number
           updated_at?: string
           user_id?: string
@@ -767,10 +844,12 @@ export type Database = {
           crypto_network: string | null
           crypto_rate: number | null
           crypto_symbol: string | null
+          currency: string
           id: string
           method: string
           paid_at: string | null
           payment_reference: string | null
+          payout_mvr_minor: number | null
           reference: string
           review_note: string | null
           reviewed_at: string | null
@@ -789,10 +868,12 @@ export type Database = {
           crypto_network?: string | null
           crypto_rate?: number | null
           crypto_symbol?: string | null
+          currency?: string
           id?: string
           method?: string
           paid_at?: string | null
           payment_reference?: string | null
+          payout_mvr_minor?: number | null
           reference?: string
           review_note?: string | null
           reviewed_at?: string | null
@@ -811,10 +892,12 @@ export type Database = {
           crypto_network?: string | null
           crypto_rate?: number | null
           crypto_symbol?: string | null
+          currency?: string
           id?: string
           method?: string
           paid_at?: string | null
           payment_reference?: string | null
+          payout_mvr_minor?: number | null
           reference?: string
           review_note?: string | null
           reviewed_at?: string | null
@@ -851,6 +934,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      _convert_wallet_to_mvr: {
+        Args: { _ref: string; _user: string }
+        Returns: undefined
+      }
       _create_match_markets: {
         Args: {
           _a: number
@@ -862,6 +949,10 @@ export type Database = {
         Returns: undefined
       }
       _crypto_wallet: { Args: { _wallet_id: string }; Returns: Json }
+      _limit_in: {
+        Args: { _currency: string; _mvr_minor: number }
+        Returns: number
+      }
       _notify: {
         Args: { _body: string; _kind: string; _title: string; _user: string }
         Returns: undefined
@@ -889,6 +980,11 @@ export type Database = {
         Returns: number
       }
       _settle_bet: { Args: { _bet: string }; Returns: undefined }
+      _to_wallet: {
+        Args: { _amount: number; _currency: string; _user: string }
+        Returns: number
+      }
+      _usdt_rate: { Args: { _kind: string }; Returns: number }
       admin_add_staff_by_email: {
         Args: { _email: string; _role: Database["public"]["Enums"]["app_role"] }
         Returns: string
@@ -916,6 +1012,21 @@ export type Database = {
           email: string
           full_name: string
           roles: Database["public"]["Enums"]["app_role"][]
+          user_id: string
+          username: string
+        }[]
+      }
+      admin_player_balances: {
+        Args: never
+        Returns: {
+          balance_minor: number
+          currency: string
+          deposits_count: number
+          email: string
+          full_name: string
+          last_activity: string
+          open_stakes_minor: number
+          reserved_minor: number
           user_id: string
           username: string
         }[]
@@ -987,6 +1098,7 @@ export type Database = {
         Returns: undefined
       }
       can_finance: { Args: { _user_id: string }; Returns: boolean }
+      can_support: { Args: { _user_id: string }; Returns: boolean }
       can_trade: { Args: { _user_id: string }; Returns: boolean }
       cancel_deposit: { Args: { _id: string }; Returns: undefined }
       cancel_withdrawal: { Args: { _id: string }; Returns: undefined }
@@ -1053,6 +1165,13 @@ export type Database = {
           _slip_path: string
         }
         Returns: string
+      }
+      support_close: { Args: { _thread: string }; Returns: undefined }
+      support_escalate: { Args: { _thread: string }; Returns: undefined }
+      support_open_thread: { Args: never; Returns: string }
+      support_send: {
+        Args: { _as?: string; _body: string; _thread: string }
+        Returns: undefined
       }
       take_break: { Args: { _hours: number }; Returns: undefined }
       username_available: { Args: { _username: string }; Returns: boolean }
